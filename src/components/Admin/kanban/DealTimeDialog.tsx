@@ -23,17 +23,28 @@ export const DealTimeDialog = ({
   const [open, setOpen] = useState(false)
   const [start, setStart] = useState(startTime ?? "")
   const [end, setEnd] = useState(endTime ?? "")
+  const [error, setError] = useState("")
 
   const handleOpenChange = (next: boolean) => {
     setOpen(next)
     if (next) {
       setStart(startTime ?? "")
       setEnd(endTime ?? "")
+      setError("")
     }
   }
 
   const handleSave = () => {
-    if (!start || !end) return
+    if (!start || !end) {
+      setError("Boshlanish va tugash vaqtini kiriting")
+      return
+    }
+    if (start >= end) {
+      setError("Tugash vaqti boshlanish vaqtidan keyin bo'lishi kerak")
+      return
+    }
+
+    setError("")
     onSave(start, end)
     setOpen(false)
   }
@@ -50,7 +61,9 @@ export const DealTimeDialog = ({
           onClick={(e) => e.stopPropagation()}
         >
           <Clock className="h-3 w-3" />
-          {startTime && endTime ? `${startTime} – ${endTime}` : "Vaqt belgilash"}
+          {startTime && endTime
+            ? `${startTime} – ${endTime}`
+            : "Vaqt belgilash"}
         </Button>
       </PopoverTrigger>
 
@@ -78,6 +91,8 @@ export const DealTimeDialog = ({
             onChange={(e) => setEnd(e.target.value)}
           />
         </div>
+
+        {error && <p className="text-xs text-destructive">{error}</p>}
 
         <Button type="button" size="sm" className="w-full" onClick={handleSave}>
           Saqlash

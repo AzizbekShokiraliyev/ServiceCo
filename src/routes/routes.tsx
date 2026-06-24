@@ -7,12 +7,13 @@ import AppLayout from "@/pages/AppLayout"
 import { createBrowserRouter, Navigate } from "react-router-dom"
 import WorkersPage from "@/components/Workers/WorkersPage"
 import User from "@/components/Users/User"
+import ClientInfo from "@/components/Workers/clinetInfo/ClientInfo"
 
 export const router = createBrowserRouter([
   { path: "/", element: <AppLayout /> },
   { path: "/login", element: <Login /> },
   { path: "/register", element: <Register /> },
-  
+
   {
     element: <MainLayout />,
     children: [
@@ -20,6 +21,9 @@ export const router = createBrowserRouter([
       { path: "/kanban", element: <Kanban /> },
       { path: "/workers", element: <WorkersPage /> },
       { path: "/profile", element: <User /> },
+
+      // Yangi dinamik yo'l
+      { path: "/client/:id", element: <ClientInfo /> },
     ],
   },
 

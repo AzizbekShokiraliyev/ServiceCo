@@ -1,18 +1,11 @@
 import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import type { KanbanCardProps } from "@/interface/Interface"
-import { User, AlertTriangle } from "lucide-react"
+import { User } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { getDealTimeStatus } from "@/lib/getDealTimeStatus"
 import { DealTimeDialog } from "./DealTimeDialog"
 import { cn } from "@/lib/utils"
-
-const timeStatusBorder = {
-  upcoming: "",
-  active: "border-blue-500/40",
-  overdue: "border-red-500/40",
-  none: "",
-} as const
 
 export const KanbanCard = ({ deal, onTimeChange }: KanbanCardProps) => {
   const {
@@ -45,7 +38,7 @@ export const KanbanCard = ({ deal, onTimeChange }: KanbanCardProps) => {
         <Card
           className={cn(
             "flex flex-col gap-2 rounded-xl border border-border/50 bg-card p-3.5 shadow-sm transition-all duration-200 hover:border-border/80 hover:bg-accent/10 hover:shadow-md",
-            timeStatusBorder[timeStatus]
+            [timeStatus]
           )}
         >
           <div className="flex items-center justify-between gap-2">
@@ -55,9 +48,6 @@ export const KanbanCard = ({ deal, onTimeChange }: KanbanCardProps) => {
                 {deal.client}
               </span>
             </div>
-            {timeStatus === "overdue" && (
-              <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0 text-red-500" />
-            )}
           </div>
 
           <h4 className="text-sm leading-snug font-semibold tracking-tight text-foreground/90">

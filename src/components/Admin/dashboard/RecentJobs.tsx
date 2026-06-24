@@ -47,7 +47,7 @@ const mockRecentJobs: RecentJobItem[] = [
     location: "Gafur Gulam St, 12",
     job_type: "plumbing",
     duration_estimate: "4 hours",
-    status: "pending",
+    status: "on_way",
     technician: "Olim Toshov",
   },
   {
@@ -65,7 +65,7 @@ const mockRecentJobs: RecentJobItem[] = [
     location: "Nukus St, 88",
     job_type: "electrical",
     duration_estimate: "3 hours",
-    status: "pending",
+    status: "on_way",
     technician: "Ali Valiyev",
   },
   {
@@ -165,58 +165,55 @@ export function RecentJobs() {
           )
         })}
       </CardContent>
-      <div className="">
-        <CardFooter>
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  className={cn(
-                    "cursor-pointer select-none",
-                    currentPage === 1 && "pointer-events-none opacity-40"
-                  )}
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.preventDefault()
-                    handlePageChange(currentPage - 1)
-                  }}
-                />
-              </PaginationItem>
+      <CardFooter>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                className={cn(
+                  "cursor-pointer select-none",
+                  currentPage === 1 && "pointer-events-none opacity-40"
+                )}
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault()
+                  handlePageChange(currentPage - 1)
+                }}
+              />
+            </PaginationItem>
 
-              {Array.from({ length: totalPages }, (_, index) => {
-                const pageNumber = index + 1
-                return (
-                  <PaginationItem key={pageNumber}>
-                    <PaginationLink
-                      className="cursor-pointer select-none"
-                      isActive={currentPage === pageNumber}
-                      onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                        e.preventDefault()
-                        handlePageChange(pageNumber)
-                      }}
-                    >
-                      {pageNumber}
-                    </PaginationLink>
-                  </PaginationItem>
-                )
-              })}
+            {Array.from({ length: totalPages }, (_, index) => {
+              const pageNumber = index + 1
+              return (
+                <PaginationItem key={pageNumber}>
+                  <PaginationLink
+                    className="cursor-pointer select-none"
+                    isActive={currentPage === pageNumber}
+                    onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                      e.preventDefault()
+                      handlePageChange(pageNumber)
+                    }}
+                  >
+                    {pageNumber}
+                  </PaginationLink>
+                </PaginationItem>
+              )
+            })}
 
-              <PaginationItem>
-                <PaginationNext
-                  className={cn(
-                    "cursor-pointer select-none",
-                    currentPage === totalPages &&
-                      "pointer-events-none opacity-40"
-                  )}
-                  onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                    e.preventDefault()
-                    handlePageChange(currentPage + 1)
-                  }}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </CardFooter>
-      </div>
+            <PaginationItem>
+              <PaginationNext
+                className={cn(
+                  "cursor-pointer select-none",
+                  currentPage === totalPages && "pointer-events-none opacity-40"
+                )}
+                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
+                  e.preventDefault()
+                  handlePageChange(currentPage + 1)
+                }}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </CardFooter>
     </Card>
   )
 }

@@ -1,8 +1,8 @@
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { Lock } from "lucide-react"
 import { KanbanCard } from "./KanbanCard"
 import type { KanbanColumnProps } from "@/interface/Interface"
-import { Lock } from "lucide-react"
 
 export const KanbanColumn = ({
   status,
@@ -23,13 +23,13 @@ export const KanbanColumn = ({
   return (
     <div
       ref={setNodeRef}
-      className={`flex ${heightClass} ${widthClass} flex-shrink-0 flex-col rounded-xl border transition-all duration-200 ${
+      className={`flex ${heightClass} ${widthClass} flex-shrink-0 flex-col rounded-xl border p-4 transition-all duration-200 ${
         isOver && !isDropDisabled
           ? "border-primary/60 bg-accent/40 shadow-sm"
           : isDropDisabled
             ? "border-muted-foreground/10 bg-muted/20 opacity-90"
             : "border-border/40 bg-muted/30"
-      } p-4`}
+      }`}
     >
       <div className="mb-4 px-1">
         <div className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
@@ -38,18 +38,17 @@ export const KanbanColumn = ({
               {status}
             </h3>
             {isDropDisabled && (
-              <span
-                className="text-[10px] text-muted-foreground/60"
-                title="Drop disabled"
-              >
-                <Lock className="h-3 w-3 inline" />
-              </span>
+              <Lock className="h-3 w-3 text-muted-foreground/60" />
             )}
           </div>
-          <span className="rounded-md border border-border/20 bg-background px-2 py-0.5 text-xs font-medium text-foreground/70 shadow-sm">
-            {deals.length}
-          </span>
+
+          <div className="flex items-center gap-1">
+            <span className="rounded-md border border-border/20 bg-background px-2 py-0.5 text-xs font-medium text-foreground/70 shadow-sm">
+              {deals.length}
+            </span>
+          </div>
         </div>
+
         {subtitle && (
           <span className="text-[11px] font-medium text-muted-foreground/60">
             {subtitle}
@@ -61,7 +60,7 @@ export const KanbanColumn = ({
         items={deals.map((d) => d.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="scrollbar-thin flex-1 space-y-3 overflow-y-auto p-0.5 select-none">
+        <div className="flex-1 scrollbar-thin space-y-3 overflow-y-auto p-0.5 select-none">
           {deals.map((deal) => (
             <KanbanCard key={deal.id} deal={deal} onTimeChange={onTimeChange} />
           ))}
@@ -73,7 +72,7 @@ export const KanbanColumn = ({
               </div>
             ) : (
               <div className="flex h-20 items-center justify-center text-xs text-muted-foreground/40 italic">
-                {isDropDisabled ? "Only drag out" : emptyText}
+                {isDropDisabled ? "Faqat sudrab chiqing" : emptyText}
               </div>
             ))}
         </div>

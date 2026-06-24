@@ -9,33 +9,30 @@ import {
 import { arrayMove } from "@dnd-kit/sortable"
 import { KanbanColumn } from "./KanbanColumn"
 import { KanbanCard } from "./KanbanCard"
-import type { KanbanDeal } from "@/interface/Interface"
-import { Button } from "@/components/ui/button"
+import AddWorkerModal from "./actionWorker/AddWorkerModal"
+import DeleteWorker from "./actionWorker/DeleteWorker"
+import type { KanbanDeal, Skill, Technician } from "@/interface/Interface"
 
-type Technician = { name: string; skill: "Electrical" | "Plumbing" | "HVAC" }
-
-const TECHNICIANS: Technician[] = [
-  { name: "Alisher", skill: "Electrical" },
-  { name: "Bobur", skill: "Plumbing" },
-  { name: "Davron", skill: "HVAC" },
-  { name: "Eldor", skill: "Electrical" },
-  { name: "Farrux", skill: "Plumbing" },
-  { name: "Giyos", skill: "HVAC" },
-  { name: "Hasan", skill: "Electrical" },
-  { name: "Ilhom", skill: "Plumbing" },
-  { name: "Jasur", skill: "HVAC" },
-  { name: "Kamol", skill: "Electrical" },
-]
-
-const SKILL_FILTERS = ["Barchasi", "Electrical", "Plumbing", "HVAC"] as const
-
-const SKILL_LABELS: Record<Technician["skill"], string> = {
+const SKILL_LABELS: Record<Skill, string> = {
   Electrical: "Elektrik",
   Plumbing: "Santexnik",
   HVAC: "Konditsioner",
 }
 
-const COLUMNS = ["Works", ...TECHNICIANS.map((t) => t.name)]
+const SKILL_FILTERS = ["Barchasi", "Electrical", "Plumbing", "HVAC"] as const
+
+const INITIAL_TECHNICIANS: Technician[] = [
+  { id: "t1", name: "Alisher", skill: "Electrical" },
+  { id: "t2", name: "Bobur", skill: "Plumbing" },
+  { id: "t3", name: "Davron", skill: "HVAC" },
+  { id: "t4", name: "Eldor", skill: "Electrical" },
+  { id: "t5", name: "Farrux", skill: "Plumbing" },
+  { id: "t6", name: "Giyos", skill: "HVAC" },
+  { id: "t7", name: "Hasan", skill: "Electrical" },
+  { id: "t8", name: "Ilhom", skill: "Plumbing" },
+  { id: "t9", name: "Jasur", skill: "HVAC" },
+  { id: "t10", name: "Kamol", skill: "Electrical" },
+]
 
 const MOCK_DEALS: KanbanDeal[] = [
   {
@@ -85,6 +82,8 @@ const MOCK_DEALS: KanbanDeal[] = [
 ]
 
 const Kanban = () => {
+  const [technicians, setTechnicians] =
+    useState<Technician[]>(INITIAL_TECHNICIANS)
   const [deals, setDeals] = useState<KanbanDeal[]>(MOCK_DEALS)
   const [activeDeal, setActiveDeal] = useState<KanbanDeal | null>(null)
   const [skillFilter, setSkillFilter] =
@@ -92,13 +91,31 @@ const Kanban = () => {
 
   const visibleTechnicians =
     skillFilter === "Barchasi"
-      ? TECHNICIANS
-      : TECHNICIANS.filter((t) => t.skill === skillFilter)
+      ? technicians
+      : technicians.filter((t) => t.skill === skillFilter)
+
+  const addWorker = (name: string, skill: Skill) => {
+    const id = `t${Date.now()}`
+    setTechnicians((prev) => [...prev, { id, name, skill }])
+  }
+
+  const deleteWorker = (id: string) => {
+    const tech = technicians.find((t) => t.id === id)
+    setTechnicians((prev) => prev.filter((t) => t.id !== id))
+    if (tech) {
+      setDeals((prev) =>
+        prev.map((d) =>
+          d.status === tech.name ? { ...d, status: "Works" } : d
+        )
+      )
+    }
+  }
+
+  const allColumns = ["Works", ...technicians.map((t) => t.name)]
 
   const findColumn = (id: string): string | null => {
-    if (COLUMNS.includes(id)) return id
-    const deal = deals.find((d) => d.id === id)
-    return deal ? deal.status : null
+    if (allColumns.includes(id)) return id
+    return deals.find((d) => d.id === id)?.status ?? null
   }
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -109,7 +126,6 @@ const Kanban = () => {
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
     setActiveDeal(null)
-
     if (!over) return
 
     const activeId = active.id as string
@@ -119,10 +135,7 @@ const Kanban = () => {
     const activeContainer = findColumn(activeId)
     const overContainer = findColumn(overId)
     if (!activeContainer || !overContainer) return
-
-    if (overContainer === "Works") {
-      return
-    }
+    if (overContainer === "Works") return
 
     const activeIndex = deals.findIndex((d) => d.id === activeId)
     const overIndex = deals.findIndex((d) => d.id === overId)
@@ -130,19 +143,14 @@ const Kanban = () => {
 
     const reordered =
       overIndex !== -1 ? arrayMove(deals, activeIndex, overIndex) : [...deals]
-
-    const finalItems = reordered.map((d) =>
-      d.id === activeId ? { ...d, status: overContainer } : d
+    setDeals(
+      reordered.map((d) =>
+        d.id === activeId ? { ...d, status: overContainer } : d
+      )
     )
-
-    setDeals(finalItems)
   }
 
-  const handleTimeChange = (
-    id: string,
-    startTime: string,
-    endTime: string
-  ) => {
+  const handleTimeChange = (id: string, startTime: string, endTime: string) => {
     setDeals((prev) =>
       prev.map((d) => (d.id === id ? { ...d, startTime, endTime } : d))
     )
@@ -161,37 +169,39 @@ const Kanban = () => {
             deals={deals.filter((d) => d.status === "Works")}
             heightClass="h-[640px]"
             widthClass="w-64"
-            emptyText="No unassigned jobs"
+            emptyText="Tayinlanmagan ish yo'q"
             emptyVariant="info"
             isDropDisabled={true}
             onTimeChange={handleTimeChange}
           />
+
           <div className="flex h-[640px] flex-col gap-4">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
+              <div className="flex gap-1">
+                {SKILL_FILTERS.map((skill) => (
+                  <button
+                    key={skill}
+                    onClick={() => setSkillFilter(skill)}
+                    className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
+                      skillFilter === skill
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border bg-background text-foreground/70 hover:bg-accent"
+                    }`}
+                  >
+                    {skill}
+                  </button>
+                ))}
+              </div>
               <div className="flex items-center gap-2">
-                <div className="flex gap-1">
-                  {SKILL_FILTERS.map((skill) => (
-                    <Button
-                      key={skill}
-                      type="button"
-                      onClick={() => setSkillFilter(skill)}
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
-                        skillFilter === skill
-                          ? "border-foreground bg-foreground text-background shadow-sm"
-                          : "border-border/30 bg-muted/40 text-muted-foreground hover:bg-muted"
-                      }`}
-                    >
-                      {skill}
-                    </Button>
-                  ))}
-                </div>
+                <DeleteWorker workers={technicians} onDelete={deleteWorker} />
+                <AddWorkerModal onAdd={addWorker} />
               </div>
             </div>
 
             <div className="grid grid-cols-5 grid-rows-2 gap-4">
               {visibleTechnicians.map((tech) => (
                 <KanbanColumn
-                  key={tech.name}
+                  key={tech.id}
                   status={tech.name}
                   deals={deals.filter((d) => d.status === tech.name)}
                   heightClass="h-[280px]"
@@ -199,6 +209,7 @@ const Kanban = () => {
                   subtitle={SKILL_LABELS[tech.skill]}
                   isDropDisabled={false}
                   onTimeChange={handleTimeChange}
+                  onDelete={() => deleteWorker(tech.id)}
                 />
               ))}
             </div>
