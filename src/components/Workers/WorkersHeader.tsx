@@ -1,5 +1,4 @@
 interface WorkersHeaderProps {
-  // FIX: accept props — hardcoded name/role makes this component useless for any other worker
   name: string
   role: string
 }

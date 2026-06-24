@@ -18,7 +18,6 @@ export default function StatCard({
 }: StatCardProps) {
   return (
     <Card>
-      {/* FIX: added explicit p-6 — shadcn CardContent strips padding by default in some setups */}
       <CardContent className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-sm text-muted-foreground">{label}</span>
