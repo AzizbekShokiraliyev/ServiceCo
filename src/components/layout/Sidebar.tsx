@@ -12,6 +12,7 @@ import {
   KanbanSquare,
   LogOut,
   ChevronRight,
+  User,
 } from "lucide-react"
 import { NavLink } from "react-router-dom"
 import { Button } from "../ui/button"
@@ -19,6 +20,8 @@ import { Button } from "../ui/button"
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Kanban", path: "/kanban", icon: KanbanSquare },
+  { label: "Workers", path: "/workers", icon: User },
+  { label: "User", path: "/profile", icon: User },
 ]
 
 const Sidebar = () => {

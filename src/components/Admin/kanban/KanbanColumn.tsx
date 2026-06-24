@@ -13,14 +13,8 @@ export const KanbanColumn = ({
   emptyVariant = "drop",
   subtitle,
   isDropDisabled = false,
-}: KanbanColumnProps & {
-  heightClass?: string
-  widthClass?: string
-  emptyText?: string
-  emptyVariant?: "drop" | "info"
-  subtitle?: string
-  isDropDisabled?: boolean
-}) => {
+  onTimeChange,
+}: KanbanColumnProps) => {
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     disabled: isDropDisabled,
@@ -44,12 +38,15 @@ export const KanbanColumn = ({
               {status}
             </h3>
             {isDropDisabled && (
-              <span className="text-[10px] text-muted-foreground/60" title="Drop disabled">
+              <span
+                className="text-[10px] text-muted-foreground/60"
+                title="Drop disabled"
+              >
                 <Lock className="h-3 w-3 inline" />
               </span>
             )}
           </div>
-          <span className="rounded-md bg-background px-2 py-0.5 text-xs font-medium border border-border/20 shadow-sm text-foreground/70">
+          <span className="rounded-md border border-border/20 bg-background px-2 py-0.5 text-xs font-medium text-foreground/70 shadow-sm">
             {deals.length}
           </span>
         </div>
@@ -64,17 +61,14 @@ export const KanbanColumn = ({
         items={deals.map((d) => d.id)}
         strategy={verticalListSortingStrategy}
       >
-        <div className="flex-1 scrollbar-thin space-y-3 overflow-y-auto p-0.5 select-none">
+        <div className="scrollbar-thin flex-1 space-y-3 overflow-y-auto p-0.5 select-none">
           {deals.map((deal) => (
-            <KanbanCard
-              key={deal.id}
-              deal={deal}
-            />
+            <KanbanCard key={deal.id} deal={deal} onTimeChange={onTimeChange} />
           ))}
 
           {deals.length === 0 &&
             (emptyVariant === "drop" && !isDropDisabled ? (
-              <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-border/60 text-xs text-muted-foreground/50 bg-background/20">
+              <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-border/60 bg-background/20 text-xs text-muted-foreground/50">
                 {emptyText}
               </div>
             ) : (
@@ -87,4 +81,3 @@ export const KanbanColumn = ({
     </div>
   )
 }
-

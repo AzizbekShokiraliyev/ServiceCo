@@ -13,18 +13,28 @@ export interface StatCardProps {
 
 export interface KanbanDeal {
   id: string
+  client: string
   title: string
   status: string
-  client: string
+  startTime?: string
+  endTime?: string
+}
+
+export interface KanbanCardProps {
+  deal: KanbanDeal
+  onTimeChange?: (id: string, startTime: string, endTime: string) => void
 }
 
 export interface KanbanColumnProps {
   status: string
   deals: KanbanDeal[]
-}
-
-export interface KanbanCardProps {
-  deal: KanbanDeal
+  heightClass?: string
+  widthClass?: string
+  emptyText?: string
+  emptyVariant?: "drop" | "info"
+  subtitle?: string
+  isDropDisabled?: boolean
+  onTimeChange?: (id: string, startTime: string, endTime: string) => void
 }
 
 export interface AboutUsDialogProps {

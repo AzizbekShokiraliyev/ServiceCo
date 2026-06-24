@@ -10,7 +10,6 @@ import { arrayMove } from "@dnd-kit/sortable"
 import { KanbanColumn } from "./KanbanColumn"
 import { KanbanCard } from "./KanbanCard"
 import type { KanbanDeal } from "@/interface/Interface"
-import { Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 type Technician = { name: string; skill: "Electrical" | "Plumbing" | "HVAC" }
@@ -56,20 +55,33 @@ const MOCK_DEALS: KanbanDeal[] = [
     client: "Nodira Yusupova",
     title: "Mobil ilova",
     status: "Alisher",
+    startTime: "09:00",
+    endTime: "13:00",
   },
   {
     id: "d4",
     client: "Sherzod Aliyev",
     title: "Logistika tizimi",
     status: "Bobur",
+    startTime: "10:00",
+    endTime: "12:00",
   },
   {
     id: "d5",
     client: "Gulnora Rashidova",
     title: "Onlayn do'kon",
     status: "Davron",
+    startTime: "14:00",
+    endTime: "17:00",
   },
-  { id: "d6", client: "Botir Nazarov", title: "ERP tizimi", status: "Eldor" },
+  {
+    id: "d6",
+    client: "Botir Nazarov",
+    title: "ERP tizimi",
+    status: "Eldor",
+    startTime: "08:00",
+    endTime: "10:00",
+  },
 ]
 
 const Kanban = () => {
@@ -126,6 +138,16 @@ const Kanban = () => {
     setDeals(finalItems)
   }
 
+  const handleTimeChange = (
+    id: string,
+    startTime: string,
+    endTime: string
+  ) => {
+    setDeals((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, startTime, endTime } : d))
+    )
+  }
+
   return (
     <div className="h-full overflow-x-auto overflow-y-hidden px-4 py-2">
       <DndContext
@@ -142,33 +164,27 @@ const Kanban = () => {
             emptyText="No unassigned jobs"
             emptyVariant="info"
             isDropDisabled={true}
+            onTimeChange={handleTimeChange}
           />
           <div className="flex h-[640px] flex-col gap-4">
             <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <div className="flex items-center gap-6">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    {SKILL_FILTERS.map((skill) => (
-                      <Button
-                        key={skill}
-                        onClick={() => setSkillFilter(skill)}
-                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
-                          skillFilter === skill
-                            ? "border-foreground bg-foreground text-background shadow-sm"
-                            : "border-border/30 bg-muted/40 text-muted-foreground hover:bg-muted"
-                        }`}
-                      >
-                        {skill}
-                      </Button>
-                    ))}
-                  </div>
+              <div className="flex items-center gap-2">
+                <div className="flex gap-1">
+                  {SKILL_FILTERS.map((skill) => (
+                    <Button
+                      key={skill}
+                      type="button"
+                      onClick={() => setSkillFilter(skill)}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-all ${
+                        skillFilter === skill
+                          ? "border-foreground bg-foreground text-background shadow-sm"
+                          : "border-border/30 bg-muted/40 text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {skill}
+                    </Button>
+                  ))}
                 </div>
-              </div>
-
-              <div>
-                <Button size="sm" className="font-semibold shadow-sm">
-                  <Plus className="mr-1 h-3.5 w-3.5" /> Add worker
-                </Button>
               </div>
             </div>
 
@@ -182,6 +198,7 @@ const Kanban = () => {
                   widthClass="w-53"
                   subtitle={SKILL_LABELS[tech.skill]}
                   isDropDisabled={false}
+                  onTimeChange={handleTimeChange}
                 />
               ))}
             </div>
