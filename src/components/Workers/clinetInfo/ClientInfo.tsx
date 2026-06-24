@@ -27,6 +27,7 @@ import { InfoCard } from "./InfoCard"
 import { useTasks } from "@/hooks/useTasks"
 import InfoModal from "../InfoModel"
 import { TasksProvider } from "./TaskProvide"
+import type { Status } from "./TasksContext"
 
 // 1. IMPORT TasksProvider alongside Status
 
