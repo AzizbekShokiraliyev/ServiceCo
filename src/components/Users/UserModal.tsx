@@ -1,104 +1,136 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import { PlusCircle } from "lucide-react"
+import { UserPlus } from "lucide-react"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import type { Skill } from "@/interface/Interface"
 
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import {
+  workerSchema,
+  type WorkerFormValues,
+} from "../shared/validation/worker.schema"
 
-export default function UserModal() {
-  const navigate = useNavigate()
+interface AddWorkerModalProps {
+  onAdd: (name: string, skill: Skill) => void
+}
+
+export default function UserModal({ onAdd }: AddWorkerModalProps) {
   const [open, setOpen] = useState(false)
 
-  const [fullName, setFullName] = useState("")
-  const [email, setEmail] = useState("")
-  const [location, setLocation] = useState("")
-  const [problem, setProblem] = useState("")
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    formState: { errors },
+  } = useForm<WorkerFormValues>({
+    resolver: zodResolver(workerSchema),
+    defaultValues: {
+      fullName: "",
+      skill: "Electrical",
+    },
+  })
 
-  const handleSubmit = () => {
+  const handleOpenChange = (next: boolean) => {
+    setOpen(next)
+    if (!next) {
+      reset()
+    }
+  }
+
+  // 3. Validatsiyadan o'tsa ishlaydigan funksiya
+  const onSubmit = (data: WorkerFormValues) => {
+    onAdd(data.fullName, data.skill as Skill)
     setOpen(false)
-    navigate("/profile", {
-      state: { fullName, email, location, problem },
-    })
+    reset()
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="gap-2">
-          <PlusCircle className="h-4 w-4" />
-          Yangi muammo
+        <Button>
+          <UserPlus className="mr-1.5 h-4 w-4" />
+          Ishchi qo'shish
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[420px]">
         <DialogHeader>
-          <DialogTitle>Muammoni yuborish</DialogTitle>
-          <DialogDescription>
-            Ma'lumotlaringizni to'ldiring. Biz tez orada siz bilan bog'lanamiz.
-          </DialogDescription>
+          <DialogTitle>Yangi ishchi qo'shish</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-5 py-4">
-          <div className="space-y-2">
-            <Label htmlFor="fullName">To'liq ism</Label>
+        {/* Formani handleSubmit ga o'raymiz */}
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <Label htmlFor="worker-name">Ism familiya</Label>
             <Input
-              id="fullName"
-              placeholder="Masalan: Aleks Mirzayev"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              id="worker-name"
+              placeholder="Alisher Karimov"
+              autoFocus
+              {...register("fullName")} // Inputga ulash
             />
+            {/* Xatolik xabari */}
+            {errors.fullName && (
+              <p className="text-xs text-red-500">{errors.fullName.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="email">Elektron pochta</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="example@mail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+          <div className="space-y-1.5">
+            <Label>Ish yo'nalishi</Label>
+            {/* Select komponentini Controller bilan ulash */}
+            <Controller
+              control={control}
+              name="skill"
+              render={({ field }) => (
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Yo'nalishni tanlang" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Electrical">Elektrik</SelectItem>
+                    <SelectItem value="Plumbing">Santexnik</SelectItem>
+                    <SelectItem value="HVAC">Konditsioner</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
             />
+            {/* Xatolik xabari */}
+            {errors.skill && (
+              <p className="text-xs text-red-500">{errors.skill.message}</p>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="location">Manzil</Label>
-            <Input
-              id="location"
-              placeholder="Masalan: Toshkent, Yunusobod"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => handleOpenChange(false)}
+            >
+              Bekor qilish
+            </Button>
+            {/* Disabled ni olib tashladik, chunki react-hook-form o'zi xatolikni ko'rsatadi */}
+            <Button type="submit">Qo'shish</Button>
           </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="problem">Muammo tafsiloti</Label>
-            <Textarea
-              id="problem"
-              placeholder="Muammoni batafsil yozib qoldiring..."
-              className="min-h-[120px] resize-none"
-              value={problem}
-              onChange={(e) => setProblem(e.target.value)}
-            />
-          </div>
-        </div>
-
-        <DialogFooter className="gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Bekor qilish
-          </Button>
-          <Button onClick={handleSubmit}>Yuborish</Button>
-        </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

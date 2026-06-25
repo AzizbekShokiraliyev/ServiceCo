@@ -1,4 +1,4 @@
-import UserModal from "@/components/Users/UserModal"
+import { useState } from "react"
 import { StatCard } from "@/components/shared/StatCard"
 import { ListContainer } from "@/components/shared/ListContainer"
 import { InfoListItem } from "@/components/shared/InfoListItem"
@@ -11,6 +11,8 @@ import {
   Zap,
   MapPin,
 } from "lucide-react"
+import UserModal from "./UserModal"
+import type { Skill } from "@/interface/Interface"
 
 const MOCK_ORDERS = [
   {
@@ -60,7 +62,19 @@ const statConfig = {
   },
 }
 
+interface Worker {
+  id: string
+  name: string
+  skill: Skill
+}
+
 export default function User() {
+  const [workers, setWorkers] = useState<Worker[]>([])
+
+  const handleAddWorker = (name: string, skill: Skill) => {
+    setWorkers((prev) => [...prev, { id: crypto.randomUUID(), name, skill }])
+  }
+
   const open = MOCK_ORDERS.filter((o) => o.status !== "completed").length
   const resolved = MOCK_ORDERS.filter((o) => o.status === "completed").length
 
@@ -75,9 +89,7 @@ export default function User() {
             Yuborilgan muammolaringiz va ularning holati
           </div>
         </div>
-        <div>
-          <UserModal />
-        </div>
+        <UserModal onAdd={handleAddWorker} />
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -134,6 +146,26 @@ export default function User() {
           })
         )}
       </ListContainer>
+
+      {/* Workers list - shows added workers */}
+      {workers.length > 0 && (
+        <ListContainer
+          title="Ishchilar"
+          description="Qo'shilgan ishchilar ro'yxati"
+        >
+          {workers.map((worker) => (
+            <div
+              key={worker.id}
+              className="flex items-center justify-between border-b px-1 py-3 last:border-0"
+            >
+              <span className="font-medium">{worker.name}</span>
+              <span className="text-sm text-muted-foreground">
+                {worker.skill}
+              </span>
+            </div>
+          ))}
+        </ListContainer>
+      )}
     </div>
   )
 }

@@ -7,11 +7,15 @@ import {
   pointerWithin,
 } from "@dnd-kit/core"
 import { arrayMove } from "@dnd-kit/sortable"
+import { LayoutGrid, CalendarDays } from "lucide-react"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { KanbanColumn } from "./KanbanColumn"
 import { KanbanCard } from "./KanbanCard"
 import AddWorkerModal from "./actionWorker/AddWorkerModal"
 import DeleteWorker from "./actionWorker/DeleteWorker"
 import type { KanbanDeal, Skill, Technician } from "@/interface/Interface"
+import { TimelineView } from "./timleLine/TimelineView"
+import { TimelineCard } from "./timleLine/TimelineCard"
 
 const SKILL_LABELS: Record<Skill, string> = {
   Electrical: "Elektrik",
@@ -81,6 +85,8 @@ const MOCK_DEALS: KanbanDeal[] = [
   },
 ]
 
+type ViewMode = "kanban" | "timeline"
+
 const Kanban = () => {
   const [technicians, setTechnicians] =
     useState<Technician[]>(INITIAL_TECHNICIANS)
@@ -88,6 +94,7 @@ const Kanban = () => {
   const [activeDeal, setActiveDeal] = useState<KanbanDeal | null>(null)
   const [skillFilter, setSkillFilter] =
     useState<(typeof SKILL_FILTERS)[number]>("Barchasi")
+  const [viewMode, setViewMode] = useState<ViewMode>("kanban")
 
   const visibleTechnicians =
     skillFilter === "Barchasi"
@@ -95,8 +102,7 @@ const Kanban = () => {
       : technicians.filter((t) => t.skill === skillFilter)
 
   const addWorker = (name: string, skill: Skill) => {
-    const id = `t${Date.now()}`
-    setTechnicians((prev) => [...prev, { id, name, skill }])
+    setTechnicians((prev) => [...prev, { id: `t${Date.now()}`, name, skill }])
   }
 
   const deleteWorker = (id: string) => {
@@ -109,6 +115,22 @@ const Kanban = () => {
         )
       )
     }
+  }
+
+  const handleTimeChange = (id: string, startTime: string, endTime: string) => {
+    setDeals((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, startTime, endTime } : d))
+    )
+  }
+
+  const handleRemoveFromTimeline = (id: string) => {
+    setDeals((prev) =>
+      prev.map((d) =>
+        d.id === id
+          ? { ...d, status: "Works", startTime: undefined, endTime: undefined }
+          : d
+      )
+    )
   }
 
   const allColumns = ["Works", ...technicians.map((t) => t.name)]
@@ -132,6 +154,23 @@ const Kanban = () => {
     const overId = over.id as string
     if (activeId === overId) return
 
+    if (overId.startsWith("timeline-")) {
+      const techName = overId.replace("timeline-", "")
+      const tech = technicians.find((t) => t.name === techName)
+      if (!tech) return
+
+      const deal = deals.find((d) => d.id === activeId)
+      const startTime = deal?.startTime ?? "09:00"
+      const endTime = deal?.endTime ?? "10:00"
+
+      setDeals((prev) =>
+        prev.map((d) =>
+          d.id === activeId ? { ...d, status: techName, startTime, endTime } : d
+        )
+      )
+      return
+    }
+
     const activeContainer = findColumn(activeId)
     const overContainer = findColumn(overId)
     if (!activeContainer || !overContainer) return
@@ -150,53 +189,63 @@ const Kanban = () => {
     )
   }
 
-  const handleTimeChange = (id: string, startTime: string, endTime: string) => {
-    setDeals((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, startTime, endTime } : d))
-    )
-  }
+  const unassignedDeals = deals.filter((d) => d.status === "Works")
 
   return (
     <div className="h-full overflow-x-auto overflow-y-hidden px-4 py-2">
+      <div className="mb-4 flex items-center justify-between">
+        <Tabs
+          value={skillFilter}
+          onValueChange={(v) => setSkillFilter(v as typeof skillFilter)}
+        >
+          <TabsList>
+            {SKILL_FILTERS.map((skill) => (
+              <TabsTrigger key={skill} value={skill}>
+                {skill}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
+
+        <div className="flex items-center gap-2">
+          <DeleteWorker workers={technicians} onDelete={deleteWorker} />
+          <AddWorkerModal onAdd={addWorker} />
+
+          <Tabs
+            value={viewMode}
+            onValueChange={(v) => setViewMode(v as ViewMode)}
+          >
+            <TabsList>
+              <TabsTrigger value="kanban" className="gap-1.5">
+                <LayoutGrid className="h-4 w-4" />
+                Kanban
+              </TabsTrigger>
+              <TabsTrigger value="timeline" className="gap-1.5">
+                <CalendarDays className="h-4 w-4" />
+                Timeline
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </div>
+      </div>
+
       <DndContext
         collisionDetection={pointerWithin}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="flex min-w-max items-start gap-6 pb-4">
-          <KanbanColumn
-            status="Works"
-            deals={deals.filter((d) => d.status === "Works")}
-            heightClass="h-[640px]"
-            widthClass="w-64"
-            emptyText="Tayinlanmagan ish yo'q"
-            emptyVariant="info"
-            isDropDisabled={true}
-            onTimeChange={handleTimeChange}
-          />
-
-          <div className="flex h-[640px] flex-col gap-4">
-            <div className="flex items-center justify-between border-b border-border/40 pb-3">
-              <div className="flex gap-1">
-                {SKILL_FILTERS.map((skill) => (
-                  <button
-                    key={skill}
-                    onClick={() => setSkillFilter(skill)}
-                    className={`rounded-full px-3 py-1 text-sm font-medium transition-colors ${
-                      skillFilter === skill
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border bg-background text-foreground/70 hover:bg-accent"
-                    }`}
-                  >
-                    {skill}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                <DeleteWorker workers={technicians} onDelete={deleteWorker} />
-                <AddWorkerModal onAdd={addWorker} />
-              </div>
-            </div>
+        {viewMode === "kanban" ? (
+          <div className="flex min-w-max items-start gap-6 pb-4">
+            <KanbanColumn
+              status="Works"
+              deals={unassignedDeals}
+              heightClass="h-[580px]"
+              widthClass="w-64"
+              emptyText="Tayinlanmagan ish yo'q"
+              emptyVariant="info"
+              isDropDisabled={true}
+              onTimeChange={handleTimeChange}
+            />
 
             <div className="grid grid-cols-5 grid-rows-2 gap-4">
               {visibleTechnicians.map((tech) => (
@@ -214,12 +263,24 @@ const Kanban = () => {
               ))}
             </div>
           </div>
-        </div>
+        ) : (
+          <TimelineView
+            technicians={visibleTechnicians}
+            deals={deals}
+            unassigned={unassignedDeals}
+            onRemoveFromTimeline={handleRemoveFromTimeline}
+            onTimeMove={handleTimeChange}
+          />
+        )}
 
         <DragOverlay>
           {activeDeal ? (
-            <div className="scale-105 rotate-2 opacity-85 shadow-lg">
-              <KanbanCard deal={activeDeal} />
+            <div className="scale-105 rotate-1 opacity-90 shadow-lg">
+              {viewMode === "timeline" ? (
+                <TimelineCard deal={activeDeal} isOverlay />
+              ) : (
+                <KanbanCard deal={activeDeal} />
+              )}
             </div>
           ) : null}
         </DragOverlay>

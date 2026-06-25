@@ -1,3 +1,4 @@
+import { forwardRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import {
@@ -6,9 +7,11 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group"
 import { EyeIcon, EyeOffIcon } from "lucide-react"
-import { useState } from "react"
 
-const PasswordField = () => {
+const PasswordField = forwardRef<
+  HTMLInputElement,
+  React.InputHTMLAttributes<HTMLInputElement>
+>((props, ref) => {
   const [show, setShow] = useState(false)
   return (
     <FieldGroup>
@@ -18,6 +21,8 @@ const PasswordField = () => {
           <InputGroupInput
             type={show ? "text" : "password"}
             placeholder="********"
+            ref={ref}
+            {...props}
           />
           <InputGroupAddon align="inline-end">
             <Button
@@ -33,6 +38,7 @@ const PasswordField = () => {
       </Field>
     </FieldGroup>
   )
-}
+})
+PasswordField.displayName = "PasswordField"
 
 export default PasswordField

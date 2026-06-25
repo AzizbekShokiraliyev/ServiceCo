@@ -18,11 +18,8 @@ export interface Profile {
 
 export interface Technician {
   id: string;
-  profile_id: string | null;
   name: string;
   skill: Skill;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface Job {
@@ -115,3 +112,4 @@ export interface ConfirmDialogProps {
   cancelLabel?: string
   onConfirm: () => void
 }
+

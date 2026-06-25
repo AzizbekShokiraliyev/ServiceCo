@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button"
 import {
   Card,
   CardContent,
@@ -5,14 +6,48 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../ui/card"
-import { Button } from "../ui/button"
+} from "@/components/ui/card"
+import { useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  loginSchema,
+  type LoginFormValues,
+} from "../shared/validation/auth.schema"
+import { supabase } from "@/lib/supaBase"
 import { Field, FieldGroup, FieldLabel } from "../ui/field"
 import { Input } from "../ui/input"
 import PasswordField from "./shared/PasswordField"
-import { Link } from "react-router-dom"
 
 const Login = () => {
+  const [error, setError] = useState("")
+  const navigate = useNavigate()
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  })
+
+  const onSubmit = async (data: LoginFormValues) => {
+    setError("")
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    })
+
+    if (error) {
+      setError(error.message)
+    } else {
+      navigate("/dashboard")
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center">
       <Card className="w-full sm:max-w-md">
@@ -24,18 +59,34 @@ const Login = () => {
         </CardHeader>
 
         <CardContent>
-          <form className="grid gap-4">
+          <form className="grid gap-4" onSubmit={handleSubmit(onSubmit)}>
             <FieldGroup>
               <Field>
                 <FieldLabel>Email</FieldLabel>
-                <Input type="email" placeholder="example@gmail.com" />
+                <Input
+                  type="email"
+                  placeholder="example@gmail.com"
+                  {...register("email")}
+                />
+                {errors.email && (
+                  <p className="text-sm text-red-500">{errors.email.message}</p>
+                )}
               </Field>
             </FieldGroup>
 
-            <PasswordField />
+            <div>
+              <PasswordField {...register("password")} />
+              {errors.password && (
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
 
-            <Button type="submit" className="w-full">
-              Login
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting ? "Loading..." : "Login"}
             </Button>
           </form>
         </CardContent>

@@ -20,7 +20,7 @@ export function StatCard({
 }: SharedStatCardProps) {
   return (
     <Card>
-      <div className="rounded-xl border-border/50 shadow-sm">
+      <div className="rounded-xl">
         <CardHeader>
           <div className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle>
