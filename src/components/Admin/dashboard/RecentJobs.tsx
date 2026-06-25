@@ -101,6 +101,13 @@ const StatusStyles = {
   completed: "text-emerald-400 border-emerald-500/30",
 }
 
+const StatusLabels = {
+  on_way: "Yo'lda",
+  in_progress: "Jarayonda",
+  completed: "Bajarildi",
+}
+
+
 const JOB_TABS = [
   { value: "active", label: "Faol ishlar" },
   { value: "completed", label: "Bajarilganlar" },
@@ -225,8 +232,9 @@ export function RecentJobs() {
                 iconColor={typeConfig.text}
                 title={job.client_name}
                 duration={job.duration_estimate}
-                statusLabel={job.status.replace("_", " ")}
+                statusLabel={StatusLabels[job.status] || job.status}
                 statusClassName={StatusStyles[job.status]}
+
                 subtitle={
                   <div className="flex items-center gap-3">
                     <span className="flex items-center gap-1">

@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Phone, MapPin, Clock, Car, Cog, Check } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -26,12 +26,28 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 
-const UI_TASK = {
-  id: 1,
-  title: "Ofis simlarini ta'mirlash",
-  address: "42 Amir Temur",
-  phone: "+998 90 123 45 67",
-  time: "8:00 - 10:00",
+const TASKS_DATA = {
+  t1: {
+    id: "t1",
+    title: "Ofis simlarini ta'mirlash",
+    address: "5-bino, 3-qavat (Amir Temur ko'chasi)",
+    phone: "+998 90 123 45 67",
+    time: "08:00 - 10:00",
+  },
+  t2: {
+    id: "t2",
+    title: "Quvur sizishi",
+    address: "Chilonzor dahasi, 12-uy",
+    phone: "+998 93 987 65 43",
+    time: "10:30 - 12:00",
+  },
+  t3: {
+    id: "t3",
+    title: "Eshik o'rnatish",
+    address: "Yunusobod tumani, 4-kvartal",
+    phone: "+998 94 333 22 11",
+    time: "13:00 - 15:00",
+  },
 }
 
 // Internal reusable component for the info boxes
@@ -58,9 +74,21 @@ function InfoCard({
 }
 
 export default function ClientInfo() {
-  const navigate = useNavigate() // <-- Route navigation hook
+  const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
   const [status, setStatus] = useState("started")
   const [confirmOpen, setConfirmOpen] = useState(false)
+
+  const task = id && id in TASKS_DATA ? TASKS_DATA[id as keyof typeof TASKS_DATA] : null
+
+  if (!task) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[50vh] space-y-4">
+        <p className="text-muted-foreground text-lg">Vazifa topilmadi.</p>
+        <Button onClick={() => navigate(-1)}>Orqaga qaytish</Button>
+      </div>
+    )
+  }
 
   const handleStatusChange = (value: string) => {
     if (!value) return
@@ -90,10 +118,10 @@ export default function ClientInfo() {
             </Avatar>
             <div className="flex-1">
               <CardTitle>
-                <div className="text-3xl">{UI_TASK.title}</div>
+                <div className="text-3xl">{task.title}</div>
               </CardTitle>
               <CardDescription>
-                <div className="mt-2">Vazifa #{UI_TASK.id}</div>
+                <div className="mt-2">Vazifa #{task.id}</div>
               </CardDescription>
             </div>
             <Badge variant="secondary" className="h-9 px-4 text-sm">
@@ -108,15 +136,17 @@ export default function ClientInfo() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <InfoCard icon={Phone} label="Telefon" value={UI_TASK.phone} />
-        <InfoCard icon={MapPin} label="Manzil" value={UI_TASK.address} />
-        <InfoCard icon={Clock} label="Vaqt" value={UI_TASK.time} />
+        <InfoCard icon={Phone} label="Telefon" value={task.phone} />
+        <InfoCard icon={MapPin} label="Manzil" value={task.address} />
+        <InfoCard icon={Clock} label="Vaqt" value={task.time} />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Ish holati</CardTitle>
-          <CardDescription>Joriy holatni yangilang</CardDescription>
+          <div className="flex flex-col gap-1">
+            <CardTitle>Ish holati</CardTitle>
+            <CardDescription>Joriy holatni yangilang</CardDescription>
+          </div>
         </CardHeader>
         <Separator />
         <CardContent>
@@ -154,7 +184,12 @@ export default function ClientInfo() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-            <AlertDialogAction onClick={() => setConfirmOpen(false)}>
+            <AlertDialogAction
+              onClick={() => {
+                setStatus("finished")
+                setConfirmOpen(false)
+              }}
+            >
               Ha, tugatdim
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -163,3 +198,4 @@ export default function ClientInfo() {
     </div>
   )
 }
+

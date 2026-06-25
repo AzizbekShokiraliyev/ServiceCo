@@ -45,6 +45,7 @@ interface TimelineViewProps {
   unassigned: KanbanDeal[]
   onRemoveFromTimeline: (id: string) => void
   onTimeMove: (id: string, startTime: string, endTime: string) => void
+  onRowChange: (id: string, newRowId: string) => void
 }
 
 export const TimelineView = ({
@@ -53,6 +54,7 @@ export const TimelineView = ({
   unassigned,
   onRemoveFromTimeline,
   onTimeMove,
+  onRowChange,
 }: TimelineViewProps) => {
   const rows = toTimelineRows(technicians)
   const events = toTimelineEvents(deals)
@@ -90,12 +92,14 @@ export const TimelineView = ({
           height="h-[640px]"
           onEventMove={onTimeMove}
           onEventRemove={onRemoveFromTimeline}
+          onEventRowChange={onRowChange}
         />
+
 
         {technicians.map((tech, rowIndex) => {
           const ROW_HEIGHT = 72
           const HEADER_HEIGHT = 33
-          const NAME_COL_WIDTH = 160
+          const NAME_COL_WIDTH = 360
           return (
             <div
               key={tech.id}

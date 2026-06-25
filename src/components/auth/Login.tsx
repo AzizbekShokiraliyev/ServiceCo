@@ -15,10 +15,10 @@ import {
   loginSchema,
   type LoginFormValues,
 } from "../shared/validation/auth.schema"
-import { supabase } from "@/lib/supaBase"
 import { Field, FieldGroup, FieldLabel } from "../ui/field"
 import { Input } from "../ui/input"
 import PasswordField from "./shared/PasswordField"
+import { supabase } from "@/lib/supaBase"
 
 const Login = () => {
   const [error, setError] = useState("")
@@ -36,15 +36,37 @@ const Login = () => {
   const onSubmit = async (data: LoginFormValues) => {
     setError("")
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: data.email,
-      password: data.password,
-    })
+    const { data: authData, error: authError } =
+      await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      })
 
-    if (error) {
-      setError(error.message)
-    } else {
-      navigate("/dashboard")
+    if (authError) {
+      setError(authError.message)
+      return
+    }
+
+    if (authData?.user) {
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", authData.user.id)
+        .single()
+
+      if (profileError || !profile) {
+        setError("Profil ma'lumotlari topilmadi.")
+        return
+      }
+
+      // Redirect based on role
+      if (profile.role === "admin") {
+        navigate("/dashboard")
+      } else if (profile.role === "technician") {
+        navigate("/workers")
+      } else {
+        navigate("/profile")
+      }
     }
   }
 

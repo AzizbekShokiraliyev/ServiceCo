@@ -14,17 +14,40 @@ import {
   ChevronRight,
   User,
 } from "lucide-react"
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { Button } from "../ui/button"
+import { useUserRole } from "@/hooks/useUserRole"
+import { supabase } from "@/lib/supaBase"
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Kanban", path: "/kanban", icon: KanbanSquare },
-  { label: "Workers", path: "/workers", icon: User },
-  { label: "User", path: "/profile", icon: User },
+  { label: "Ishlarim", path: "/workers", icon: User },
+  { label: "Mening buyurtmalarim", path: "/profile", icon: User },
 ]
 
 const Sidebar = () => {
+  const { role, loading } = useUserRole()
+  const navigate = useNavigate()
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    navigate("/login")
+  }
+
+  const filteredItems = navItems.filter((item) => {
+    if (role === "admin") {
+      return item.path === "/dashboard" || item.path === "/kanban"
+    }
+    if (role === "technician") {
+      return item.path === "/workers"
+    }
+    if (role === "customer") {
+      return item.path === "/profile"
+    }
+    return false
+  })
+
   return (
     <div className="w-64 border-none">
       <MainSidebar>
@@ -53,53 +76,62 @@ const Sidebar = () => {
             </p>
 
             <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton asChild className="h-auto p-0">
-                    <NavLink to={item.path}>
-                      {({ isActive }) => (
-                        <div
-                          className={`group relative flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ${isActive ? "bg-foreground text-background shadow-md" : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"}`}
-                        >
-                          {isActive && (
-                            <div className="absolute top-1/2 left-0 h-5 w-0.5 -translate-y-1/2 rounded-full bg-background/40" />
-                          )}
-
+              {loading ? (
+                <div className="px-3 py-2 text-xs text-muted-foreground animate-pulse">
+                  Yuklanmoqda...
+                </div>
+              ) : (
+                filteredItems.map((item) => (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton asChild className="h-auto p-0">
+                      <NavLink to={item.path}>
+                        {({ isActive }) => (
                           <div
-                            className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all ${
-                              isActive
-                                ? "bg-background/15"
-                                : "bg-muted group-hover:bg-background"
-                            } `}
+                            className={`group relative flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 transition-all duration-200 ${isActive ? "bg-foreground text-background shadow-md" : "text-muted-foreground hover:bg-muted/80 hover:text-foreground"}`}
                           >
-                            <item.icon className="h-3.5 w-3.5" />
+                            {isActive && (
+                              <div className="absolute top-1/2 left-0 h-5 w-0.5 -translate-y-1/2 rounded-full bg-background/40" />
+                            )}
+
+                            <div
+                              className={`flex h-7 w-7 items-center justify-center rounded-lg transition-all ${
+                                isActive
+                                  ? "bg-background/15"
+                                  : "bg-muted group-hover:bg-background"
+                              } `}
+                            >
+                              <item.icon className="h-3.5 w-3.5" />
+                            </div>
+
+                            <span className="flex-1 text-sm font-medium">
+                              {item.label}
+                            </span>
+
+                            <ChevronRight
+                              className={`h-3.5 w-3.5 transition-all duration-200 ${isActive ? "opacity-60" : "opacity-0 group-hover:opacity-40"} `}
+                            />
                           </div>
-
-                          <span className="flex-1 text-sm font-medium">
-                            {item.label}
-                          </span>
-
-                          <ChevronRight
-                            className={`h-3.5 w-3.5 transition-all duration-200 ${isActive ? "opacity-60" : "opacity-0 group-hover:opacity-40"} `}
-                          />
-                        </div>
-                      )}
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+                        )}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))
+              )}
             </SidebarMenu>
           </div>
         </SidebarContent>
 
         <SidebarFooter>
-          <div className="mx-1 cursor-pointer rounded-xl border border-border/50 bg-muted/30 p-3">
-            <div className="flex items-center gap-12">
+          <div
+            onClick={handleLogout}
+            className="mx-1 cursor-pointer rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/60 transition-all duration-200"
+          >
+            <div className="flex items-center justify-between gap-4">
               <p className="truncate text-sm leading-none font-semibold">
                 Tizimdan chiqish
               </p>
-              <Button size="icon">
-                <LogOut />
+              <Button size="icon" variant="ghost" className="h-8 w-8">
+                <LogOut className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -110,3 +142,4 @@ const Sidebar = () => {
 }
 
 export default Sidebar
+

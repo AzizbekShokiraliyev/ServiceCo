@@ -1,5 +1,8 @@
 import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useState } from "react"
+import { useNavigate, Link } from "react-router-dom"
+import type { AuthError } from "@supabase/supabase-js"
 import {
   Card,
   CardContent,
@@ -10,15 +13,19 @@ import {
 } from "../ui/card"
 import { Field, FieldGroup, FieldLabel } from "../ui/field"
 import { Input } from "../ui/input"
-import PasswordField from "./shared/PasswordField"
 import { Button } from "../ui/button"
-import { Link } from "react-router-dom"
+import PasswordField from "./shared/PasswordField"
 import {
   registerSchema,
   type RegisterFormValues,
 } from "../shared/validation/auth.schema"
+import { supabase } from "@/lib/supaBase"
 
 const Register = () => {
+  const navigate = useNavigate()
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+
   const {
     register,
     handleSubmit,
@@ -27,8 +34,29 @@ const Register = () => {
     resolver: zodResolver(registerSchema),
   })
 
-  const onSubmit = (data: RegisterFormValues) => {
-    console.log("Ro'yxatdan o'tish", data)
+  const onSubmit = async (data: RegisterFormValues) => {
+    setError(null)
+    setLoading(true)
+
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          full_name: data.fullName,
+          role: "customer",
+        },
+      },
+    })
+
+    setLoading(false)
+
+    if (signUpError) {
+      setError(getAuthErrorMessage(signUpError))
+      return
+    }
+
+    navigate("/login")
   }
 
   return (
@@ -40,6 +68,7 @@ const Register = () => {
             Create new account for you
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4">
             <FieldGroup>
@@ -81,11 +110,14 @@ const Register = () => {
               )}
             </div>
 
-            <Button type="submit" className="mt-2 w-full">
-              Register
+            {error && <p className="text-sm text-red-500">{error}</p>}
+
+            <Button type="submit" className="mt-2 w-full" disabled={loading}>
+              {loading ? "Loading..." : "Register"}
             </Button>
           </form>
         </CardContent>
+
         <CardFooter className="justify-center text-sm">
           <p className="text-muted-foreground">
             Already have an account?{" "}
@@ -98,4 +130,12 @@ const Register = () => {
     </div>
   )
 }
+
+function getAuthErrorMessage(error: AuthError): string {
+  if (error.message.includes("already registered")) {
+    return "Bu email allaqachon ro'yxatdan o'tgan"
+  }
+  return error.message || "Xatolik yuz berdi"
+}
+
 export default Register

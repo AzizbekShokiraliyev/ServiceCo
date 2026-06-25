@@ -123,6 +123,12 @@ const Kanban = () => {
     )
   }
 
+  const handleRowChange = (id: string, newRowId: string) => {
+    setDeals((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, status: newRowId } : d))
+    )
+  }
+
   const handleRemoveFromTimeline = (id: string) => {
     setDeals((prev) =>
       prev.map((d) =>
@@ -132,6 +138,7 @@ const Kanban = () => {
       )
     )
   }
+
 
   const allColumns = ["Works", ...technicians.map((t) => t.name)]
 
@@ -270,8 +277,10 @@ const Kanban = () => {
             unassigned={unassignedDeals}
             onRemoveFromTimeline={handleRemoveFromTimeline}
             onTimeMove={handleTimeChange}
+            onRowChange={handleRowChange}
           />
         )}
+
 
         <DragOverlay>
           {activeDeal ? (
