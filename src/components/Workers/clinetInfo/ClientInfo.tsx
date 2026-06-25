@@ -1,5 +1,8 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { ArrowLeft, Phone, MapPin, Clock, Car, Cog, Check } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
+
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -22,8 +25,6 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
-import { InfoCard } from "./InfoCard"
-import InfoModal from "../InfoModel"
 
 const UI_TASK = {
   id: 1,
@@ -33,7 +34,31 @@ const UI_TASK = {
   time: "8:00 - 10:00",
 }
 
+// Internal reusable component for the info boxes
+function InfoCard({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: LucideIcon
+  label: string
+  value: string
+}) {
+  return (
+    <Card>
+      <CardContent className="p-5 transition-all hover:shadow-md">
+        <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+          <Icon className="h-5 w-5" />
+        </div>
+        <div className="text-sm text-muted-foreground">{label}</div>
+        <div className="mt-1 text-lg font-semibold">{value}</div>
+      </CardContent>
+    </Card>
+  )
+}
+
 export default function ClientInfo() {
+  const navigate = useNavigate() // <-- Route navigation hook
   const [status, setStatus] = useState("started")
   const [confirmOpen, setConfirmOpen] = useState(false)
 
@@ -49,10 +74,10 @@ export default function ClientInfo() {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Button variant="outline">
+        <Button variant="outline" onClick={() => navigate(-1)}>
+          {/* navigate(-1) makes the back button work instantly! */}
           <ArrowLeft className="mr-2 h-4 w-4" /> Orqaga
         </Button>
-        <InfoModal />
       </div>
 
       <Card>
@@ -64,9 +89,11 @@ export default function ClientInfo() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <CardTitle className="text-3xl">{UI_TASK.title}</CardTitle>
-              <CardDescription className="mt-2">
-                Vazifa #{UI_TASK.id}
+              <CardTitle>
+                <div className="text-3xl">{UI_TASK.title}</div>
+              </CardTitle>
+              <CardDescription>
+                <div className="mt-2">Vazifa #{UI_TASK.id}</div>
               </CardDescription>
             </div>
             <Badge variant="secondary" className="h-9 px-4 text-sm">
@@ -92,23 +119,25 @@ export default function ClientInfo() {
           <CardDescription>Joriy holatni yangilang</CardDescription>
         </CardHeader>
         <Separator />
-        <CardContent className="pt-6">
-          <ToggleGroup
-            type="single"
-            value={status}
-            onValueChange={handleStatusChange}
-            className="grid grid-cols-1 gap-3 md:grid-cols-3"
-          >
-            <ToggleGroupItem value="onWay" className="h-12">
-              <Car className="mr-2" /> Yo'ldaman
-            </ToggleGroupItem>
-            <ToggleGroupItem value="started" className="h-12">
-              <Cog className="mr-2" /> Boshladim
-            </ToggleGroupItem>
-            <ToggleGroupItem value="finished" className="h-12">
-              <Check className="mr-2" /> Tugatdim
-            </ToggleGroupItem>
-          </ToggleGroup>
+        <CardContent>
+          <div className="pt-6">
+            <ToggleGroup
+              type="single"
+              value={status}
+              onValueChange={handleStatusChange}
+              className="grid grid-cols-1 gap-3 md:grid-cols-3"
+            >
+              <ToggleGroupItem value="onWay" className="h-12">
+                <Car className="mr-2 h-4 w-4" /> Yo'ldaman
+              </ToggleGroupItem>
+              <ToggleGroupItem value="started" className="h-12">
+                <Cog className="mr-2 h-4 w-4" /> Boshladim
+              </ToggleGroupItem>
+              <ToggleGroupItem value="finished" className="h-12">
+                <Check className="mr-2 h-4 w-4" /> Tugatdim
+              </ToggleGroupItem>
+            </ToggleGroup>
+          </div>
         </CardContent>
       </Card>
 

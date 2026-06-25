@@ -21,9 +21,7 @@ export const router = createBrowserRouter([
       { path: "/kanban", element: <Kanban /> },
       { path: "/workers", element: <WorkersPage /> },
       { path: "/profile", element: <User /> },
-
-      // Yangi dinamik yo'l
-      { path: "/client/:id", element: <ClientInfo /> },
+      { path: "/workers/client/:id", element: <ClientInfo /> },
     ],
   },
 

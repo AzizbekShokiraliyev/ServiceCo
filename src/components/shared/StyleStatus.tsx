@@ -13,7 +13,7 @@ export const ClientStatusStyles: Record<ClientDealStatus, string> = {
 }
 
 export const JobStatusStyles: Record<JobStatus, string> = {
-  pending: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
+  on_way: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20",
   in_progress: "bg-sky-500/10 text-sky-500 border-sky-500/20 ",
   completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
 }

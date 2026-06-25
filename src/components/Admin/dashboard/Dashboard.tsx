@@ -1,5 +1,5 @@
 import { Wrench, Users, AlertCircle } from "lucide-react"
-import { StatCard } from "@/components/Admin/dashboard/StatCard"
+import { StatCard } from "@/components/shared/StatCard"
 import { RecentJobs } from "./RecentJobs"
 
 export default function Dashboard() {
@@ -7,17 +7,20 @@ export default function Dashboard() {
     {
       title: "Active Technicians",
       value: 12,
-      icon: <Users size={18} className="text-blue-500" />,
+      icon: Users,
+      iconColor: "text-blue-500",
     },
     {
       title: "Total Jobs Today",
       value: 24,
-      icon: <Wrench size={18} className="text-amber-500" />,
+      icon: Wrench,
+      iconColor: "text-amber-500",
     },
     {
       title: "Unassigned Dispatches",
       value: 3,
-      icon: <AlertCircle size={18} className="text-destructive" />,
+      icon: AlertCircle,
+      iconColor: "text-destructive",
     },
   ]
 
@@ -30,6 +33,7 @@ export default function Dashboard() {
             title={item.title}
             value={item.value}
             icon={item.icon}
+            iconColor={item.iconColor}
           />
         ))}
       </div>

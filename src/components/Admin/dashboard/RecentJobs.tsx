@@ -1,14 +1,8 @@
 import { useState } from "react"
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardFooter,
-} from "@/components/ui/card"
-import { cn } from "@/lib/utils"
-import { Clock, MapPin, Zap, User } from "lucide-react"
-import type { JobStatus, JobType } from "@/interface/Interface"
+import { MapPin, User, Wind, Droplet, Zap } from "lucide-react"
+import { ListContainer } from "@/components/shared/ListContainer"
+import { InfoListItem } from "@/components/shared/InfoListItem"
+import { SearchBar } from "@/components/shared/SearchBar" // <-- SearchBar ni chaqirdik
 import {
   Pagination,
   PaginationContent,
@@ -17,7 +11,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import { JobStatusStyles, JobTypeStyles } from "@/components/shared/StyleStatus"
+import type { JobStatus, JobType } from "@/interface/Interface"
 
 interface RecentJobItem {
   id: string
@@ -28,8 +22,6 @@ interface RecentJobItem {
   status: JobStatus
   technician: string
 }
-
-const ITEMS_PER_PAGE = 5
 
 const mockRecentJobs: RecentJobItem[] = [
   {
@@ -79,62 +71,164 @@ const mockRecentJobs: RecentJobItem[] = [
   },
   {
     id: "6",
-    client_name: "Tech Park Server Room",
-    location: "Mustaqillik Sq",
+    client_name: "Tashkent City Mall",
+    location: "Navoiy Ave, 1",
     job_type: "hvac",
     duration_estimate: "5 hours",
     status: "completed",
     technician: "Diyor Hasanov",
   },
+  {
+    id: "7",
+    client_name: "Grand Supermarket",
+    location: "Nukus St, 88",
+    job_type: "electrical",
+    duration_estimate: "3 hours",
+    status: "on_way",
+    technician: "Ali Valiyev",
+  },
+]
+
+const TypeStyles = {
+  hvac: { icon: Wind, bg: "bg-orange-500/10", text: "text-orange-500" },
+  plumbing: { icon: Droplet, bg: "bg-cyan-500/10", text: "text-cyan-500" },
+  electrical: { icon: Zap, bg: "bg-yellow-500/10", text: "text-yellow-500" },
+}
+
+const StatusStyles = {
+  on_way: "text-muted-foreground border-border/60",
+  in_progress: "text-blue-400 border-blue-500/30",
+  completed: "text-emerald-400 border-emerald-500/30",
+}
+
+const JOB_TABS = [
+  { value: "active", label: "Faol ishlar" },
+  { value: "completed", label: "Bajarilganlar" },
 ]
 
 export function RecentJobs() {
-  const [currentPage, setCurrentPage] = useState<number>(1)
+  const [activeTab, setActiveTab] = useState("active")
+  const [searchQuery, setSearchQuery] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const totalPages = Math.ceil(mockRecentJobs.length / ITEMS_PER_PAGE)
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const currentJobs = mockRecentJobs.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  )
+  const ITEMS_PER_PAGE = 4
 
-  const handlePageChange = (page: number) => {
-    if (page >= 1 && page <= totalPages) {
-      setCurrentPage(page)
-    }
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    setCurrentPage(1)
   }
 
-  return (
-    <Card className="flex h-[540px] w-full flex-col justify-between sm:h-[545px]">
-      <CardHeader className="pb-2">
-        <CardTitle>
-          <div className="text-base font-bold tracking-tight">
-            Recent Job Assignments
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+    setCurrentPage(1)
+  }
+
+  const filteredJobs = mockRecentJobs.filter((job) => {
+    if (activeTab === "active" && job.status === "completed") return false
+    if (activeTab === "completed" && job.status !== "completed") return false
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      const matchesClient = job.client_name.toLowerCase().includes(query)
+      const matchesLocation = job.location.toLowerCase().includes(query)
+      const matchesTech = job.technician.toLowerCase().includes(query)
+
+      if (!matchesClient && !matchesLocation && !matchesTech) return false
+    }
+    return true
+  })
+
+  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE) || 1
+  const currentJobs = filteredJobs.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  )
+
+  const PaginationFooter = (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <div
+            className={
+              currentPage === 1
+                ? "pointer-events-none opacity-40"
+                : "cursor-pointer"
+            }
+          >
+            <PaginationPrevious
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            />
           </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="flex-1 space-y-2.5 overflow-hidden">
-        {currentJobs.map((job) => {
-          const typeConfig = JobTypeStyles[job.job_type]
-          const TypeIcon = typeConfig?.icon || Zap
+        </PaginationItem>
 
-          return (
-            <div
-              key={job.id}
-              className="flex flex-col justify-between gap-4 rounded-xl border border-border/40 bg-card/50 p-4 transition-all hover:bg-accent/30 sm:flex-row sm:items-center"
-            >
-              <div className="flex items-start gap-3.5">
-                <div
-                  className={cn("mt-0.5 rounded-lg border p-2", typeConfig?.bg)}
-                >
-                  <TypeIcon className="h-4 w-4" />
-                </div>
+        {Array.from({ length: totalPages }, (_, i) => (
+          <PaginationItem key={i + 1}>
+            <div className="cursor-pointer">
+              <PaginationLink
+                isActive={currentPage === i + 1}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </PaginationLink>
+            </div>
+          </PaginationItem>
+        ))}
 
-                <div className="space-y-0.5">
-                  <h4 className="text-sm font-semibold text-foreground">
-                    {job.client_name}
-                  </h4>
-                  <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
+        <PaginationItem>
+          <div
+            className={
+              currentPage === totalPages
+                ? "pointer-events-none opacity-40"
+                : "cursor-pointer"
+            }
+          >
+            <PaginationNext
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              }
+            />
+          </div>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  )
+
+  return (
+    <div className="space-y-3">
+      {/* SearchBar ishlatildi */}
+      <SearchBar
+        tabs={JOB_TABS}
+        activeTab={activeTab}
+        onTabChange={handleTabChange}
+        searchQuery={searchQuery}
+        onSearchChange={handleSearchChange}
+        searchPlaceholder="Qidirish (ism, manzil, usta)..."
+      />
+
+      <ListContainer
+        title="Recent Job Assignments"
+        footer={PaginationFooter}
+        className="h-[510px]"
+      >
+        {currentJobs.length === 0 ? (
+          <div className="flex h-40 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
+            Buyurtmalar topilmadi.
+          </div>
+        ) : (
+          currentJobs.map((job) => {
+            const typeConfig = TypeStyles[job.job_type]
+            return (
+              <InfoListItem
+                key={job.id}
+                icon={typeConfig.icon}
+                iconBg={typeConfig.bg}
+                iconColor={typeConfig.text}
+                title={job.client_name}
+                duration={job.duration_estimate}
+                statusLabel={job.status.replace("_", " ")}
+                statusClassName={StatusStyles[job.status]}
+                subtitle={
+                  <div className="flex items-center gap-3">
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" /> {job.location}
                     </span>
@@ -143,77 +237,12 @@ export function RecentJobs() {
                       <User className="h-3 w-3" /> {job.technician}
                     </span>
                   </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex h-[25px] w-[100px] items-center justify-center gap-1 rounded-md border bg-muted text-xs font-medium text-muted-foreground">
-                  <Clock className="h-3 w-3" />
-                  <span>{job.duration_estimate}</span>
-                </div>
-
-                <span
-                  className={cn(
-                    "min-w-[95px] rounded-lg border px-2.5 py-0.5 text-center text-xs font-semibold tracking-wide capitalize shadow-sm",
-                    JobStatusStyles[job.status]
-                  )}
-                >
-                  {job.status.replace("_", " ")}
-                </span>
-              </div>
-            </div>
-          )
-        })}
-      </CardContent>
-      <CardFooter>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                className={cn(
-                  "cursor-pointer select-none",
-                  currentPage === 1 && "pointer-events-none opacity-40"
-                )}
-                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                  e.preventDefault()
-                  handlePageChange(currentPage - 1)
-                }}
+                }
               />
-            </PaginationItem>
-
-            {Array.from({ length: totalPages }, (_, index) => {
-              const pageNumber = index + 1
-              return (
-                <PaginationItem key={pageNumber}>
-                  <PaginationLink
-                    className="cursor-pointer select-none"
-                    isActive={currentPage === pageNumber}
-                    onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                      e.preventDefault()
-                      handlePageChange(pageNumber)
-                    }}
-                  >
-                    {pageNumber}
-                  </PaginationLink>
-                </PaginationItem>
-              )
-            })}
-
-            <PaginationItem>
-              <PaginationNext
-                className={cn(
-                  "cursor-pointer select-none",
-                  currentPage === totalPages && "pointer-events-none opacity-40"
-                )}
-                onClick={(e: React.MouseEvent<HTMLAnchorElement>) => {
-                  e.preventDefault()
-                  handlePageChange(currentPage + 1)
-                }}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </CardFooter>
-    </Card>
+            )
+          })
+        )}
+      </ListContainer>
+    </div>
   )
 }

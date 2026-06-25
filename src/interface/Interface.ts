@@ -2,9 +2,46 @@ import type { ReactNode } from "react"
 import type React from "react"
 
 export type TaskStatus = "Todo" | "In Progress" | "Done"
-export type JobType = "electrical" | "plumbing" | "hvac"
-export type JobStatus = "on_way" | "in_progress" | "completed"
 export type ClientDealStatus = "new" | "in_progress" | "won" | "lost"
+export type ProfileRole = 'admin' | 'technician' | 'customer';
+export type Skill = 'Electrical' | 'Plumbing' | 'HVAC';
+export type JobType = 'electrical' | 'plumbing' | 'hvac'
+export type JobStatus = 'on_way' | 'in_progress' | 'completed'
+
+export interface Profile {
+  id: string;
+  full_name: string | null;
+  role: ProfileRole;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Technician {
+  id: string;
+  profile_id: string | null;
+  name: string;
+  skill: Skill;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Job {
+  id: string;
+  client_id: string | null;
+  client_name: string;
+  email: string | null;
+  location: string;
+  title: string;
+  job_type: JobType;
+  job_status: JobStatus;
+  technician_id: string | null;
+  start_time: string | null;
+  end_time: string | null;
+  duration_estimate: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 
 export interface StatCardProps {
   title: string
@@ -39,7 +76,6 @@ export interface KanbanColumnProps {
   onDelete?: () => void
 }
 
-export type Skill = "Electrical" | "Plumbing" | "HVAC"
 
 export interface Technician {
   id: string
