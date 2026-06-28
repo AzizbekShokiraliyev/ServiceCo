@@ -1,0 +1,79 @@
+import { supabase } from "@/lib/supaBase"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import type { Technician } from "@/interface/Interface"
+import type { Skill } from "@/interface/Interface"
+
+export const useTechnicians = () => {
+  return useQuery({
+    queryKey: ["technicians"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("technicians")
+        .select("*")
+        .order("created_at", { ascending: false })
+
+      if (error) throw error
+      return data as Technician[]
+    },
+  })
+}
+
+export const useTechnicianCreate = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (payload: { full_name: string; skill: Skill; phone?: string }) => {
+      const { data, error } = await supabase
+        .from("technicians")
+        .insert(payload)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data as Technician
+    },
+    onSuccess: (created) => {
+      queryClient.setQueryData<Technician[]>(["technicians"], (old) =>
+        old ? [created, ...old] : [created]
+      )
+    },
+  })
+}
+
+export const useTechnicianDelete = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase
+        .from("technicians")
+        .delete()
+        .eq("id", id)
+
+      if (error) throw error
+      return id
+    },
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData<Technician[]>(["technicians"], (old) =>
+        old?.filter((t) => t.id !== deletedId) ?? []
+      )
+    },
+  })
+}
+
+export const useTechnicianById = (id?: string) => {
+  return useQuery({
+    queryKey: ["technician", id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("technicians")
+        .select("*")
+        .eq("id", id!)
+        .single()
+
+      if (error) throw error
+      return data as Technician
+    },
+    enabled: !!id,
+  })
+}

@@ -6,11 +6,15 @@ import {
   Timeline,
   type TimelineEvent,
   type TimelineRow,
+  ROW_HEIGHT,
+  NAME_COL_WIDTH,
 } from "@/components/shared/timeLine/Timeline"
 import { TimelineCard } from "./TimelineCard"
 
 const DroppableGridRow = ({ tech }: { tech: Technician }) => {
-  const { setNodeRef, isOver } = useDroppable({ id: `timeline-${tech.name}` })
+  const { setNodeRef, isOver } = useDroppable({
+    id: `timeline-${tech.full_name}`,
+  })
   return (
     <div
       ref={setNodeRef}
@@ -21,10 +25,10 @@ const DroppableGridRow = ({ tech }: { tech: Technician }) => {
 
 const toTimelineRows = (technicians: Technician[]): TimelineRow[] =>
   technicians.map((t) => ({
-    id: t.name,
-    label: t.name,
+    id: t.full_name,
+    label: t.full_name,
     sublabel: t.skill,
-    avatarChar: t.name[0],
+    avatarChar: t.full_name[0],
   }))
 
 const toTimelineEvents = (deals: KanbanDeal[]): TimelineEvent[] =>
@@ -61,7 +65,7 @@ export const TimelineView = ({
 
   return (
     <div className="flex h-[640px] gap-4">
-      <div className="flex w-52 shrink-0 flex-col rounded-xl border border-border/40 bg-muted/30 p-3">
+      <div className="flex w-64 shrink-0 flex-col rounded-xl border border-border/40 bg-muted/30 p-3">
         <div className="mb-3 flex items-center gap-2">
           <User className="h-4 w-4 text-muted-foreground" />
           <span className="text-xs font-bold tracking-wider text-foreground/80 uppercase">
@@ -95,11 +99,8 @@ export const TimelineView = ({
           onEventRowChange={onRowChange}
         />
 
-
         {technicians.map((tech, rowIndex) => {
-          const ROW_HEIGHT = 72
           const HEADER_HEIGHT = 33
-          const NAME_COL_WIDTH = 360
           return (
             <div
               key={tech.id}

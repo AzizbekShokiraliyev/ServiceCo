@@ -2,7 +2,6 @@ import { useState } from "react"
 import { useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Phone, MapPin, Clock, Car, Cog, Check } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
-
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -25,32 +24,9 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
+import { useJobById, useJobStatusUpdate } from "@/hooks/useJobs"
+import type { JobStatus } from "@/interface/Interface"
 
-const TASKS_DATA = {
-  t1: {
-    id: "t1",
-    title: "Ofis simlarini ta'mirlash",
-    address: "5-bino, 3-qavat (Amir Temur ko'chasi)",
-    phone: "+998 90 123 45 67",
-    time: "08:00 - 10:00",
-  },
-  t2: {
-    id: "t2",
-    title: "Quvur sizishi",
-    address: "Chilonzor dahasi, 12-uy",
-    phone: "+998 93 987 65 43",
-    time: "10:30 - 12:00",
-  },
-  t3: {
-    id: "t3",
-    title: "Eshik o'rnatish",
-    address: "Yunusobod tumani, 4-kvartal",
-    phone: "+998 94 333 22 11",
-    time: "13:00 - 15:00",
-  },
-}
-
-// Internal reusable component for the info boxes
 function InfoCard({
   icon: Icon,
   label,
@@ -73,37 +49,56 @@ function InfoCard({
   )
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  on_way: "Yo'lda",
+  in_progress: "Jarayonda",
+  completed: "Tugagan",
+}
+
 export default function ClientInfo() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const [status, setStatus] = useState("started")
   const [confirmOpen, setConfirmOpen] = useState(false)
 
-  const task = id && id in TASKS_DATA ? TASKS_DATA[id as keyof typeof TASKS_DATA] : null
+  // ✅ Supabase dan job ni olish
+  const { data: job, isLoading } = useJobById(id)
+  const { mutate: updateStatus } = useJobStatusUpdate()
 
-  if (!task) {
+  const handleStatusChange = (value: string) => {
+    if (!value || !id) return
+    if (value === "completed") {
+      setConfirmOpen(true)
+    } else {
+      updateStatus({ id, status: value as JobStatus })
+    }
+  }
+
+  if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[50vh] space-y-4">
-        <p className="text-muted-foreground text-lg">Vazifa topilmadi.</p>
+      <div className="flex h-[50vh] items-center justify-center text-sm text-muted-foreground">
+        Yuklanmoqda...
+      </div>
+    )
+  }
+
+  if (!job) {
+    return (
+      <div className="flex h-[50vh] flex-col items-center justify-center space-y-4">
+        <p className="text-lg text-muted-foreground">Vazifa topilmadi.</p>
         <Button onClick={() => navigate(-1)}>Orqaga qaytish</Button>
       </div>
     )
   }
 
-  const handleStatusChange = (value: string) => {
-    if (!value) return
-    if (value === "finished") {
-      setConfirmOpen(true)
-    } else {
-      setStatus(value)
-    }
-  }
+  const time =
+    job.scheduled_start && job.scheduled_end
+      ? `${job.scheduled_start} - ${job.scheduled_end}`
+      : "Belgilanmagan"
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="outline" onClick={() => navigate(-1)}>
-          {/* navigate(-1) makes the back button work instantly! */}
           <ArrowLeft className="mr-2 h-4 w-4" /> Orqaga
         </Button>
       </div>
@@ -113,32 +108,33 @@ export default function ClientInfo() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
             <Avatar className="h-24 w-24">
               <AvatarFallback className="bg-primary/10 text-2xl font-bold">
-                OS
+                {job.client_name?.[0] ?? "?"}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
               <CardTitle>
-                <div className="text-3xl">{task.title}</div>
+                <div className="text-3xl">{job.title}</div>
               </CardTitle>
               <CardDescription>
-                <div className="mt-2">Vazifa #{task.id}</div>
+                <div className="mt-1">{job.client_name}</div>
+                <div className="mt-1 text-xs">Vazifa #{job.id.slice(0, 8)}</div>
               </CardDescription>
             </div>
             <Badge variant="secondary" className="h-9 px-4 text-sm">
-              {status === "onWay"
-                ? "Yo'lda"
-                : status === "started"
-                  ? "Jarayonda"
-                  : "Tugagan"}
+              {STATUS_LABELS[job.status] ?? job.status}
             </Badge>
           </div>
         </CardHeader>
       </Card>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <InfoCard icon={Phone} label="Telefon" value={task.phone} />
-        <InfoCard icon={MapPin} label="Manzil" value={task.address} />
-        <InfoCard icon={Clock} label="Vaqt" value={task.time} />
+        <InfoCard
+          icon={Phone}
+          label="Telefon"
+          value={job.client_phone ?? "Yo'q"}
+        />
+        <InfoCard icon={MapPin} label="Manzil" value={job.address ?? "Yo'q"} />
+        <InfoCard icon={Clock} label="Vaqt" value={time} />
       </div>
 
       <Card>
@@ -153,17 +149,17 @@ export default function ClientInfo() {
           <div className="pt-6">
             <ToggleGroup
               type="single"
-              value={status}
+              value={job.status}
               onValueChange={handleStatusChange}
               className="grid grid-cols-1 gap-3 md:grid-cols-3"
             >
-              <ToggleGroupItem value="onWay" className="h-12">
+              <ToggleGroupItem value="on_way" className="h-12">
                 <Car className="mr-2 h-4 w-4" /> Yo'ldaman
               </ToggleGroupItem>
-              <ToggleGroupItem value="started" className="h-12">
+              <ToggleGroupItem value="in_progress" className="h-12">
                 <Cog className="mr-2 h-4 w-4" /> Boshladim
               </ToggleGroupItem>
-              <ToggleGroupItem value="finished" className="h-12">
+              <ToggleGroupItem value="completed" className="h-12">
                 <Check className="mr-2 h-4 w-4" /> Tugatdim
               </ToggleGroupItem>
             </ToggleGroup>
@@ -186,7 +182,7 @@ export default function ClientInfo() {
             <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
-                setStatus("finished")
+                updateStatus({ id: job.id, status: "completed" })
                 setConfirmOpen(false)
               }}
             >
@@ -198,4 +194,3 @@ export default function ClientInfo() {
     </div>
   )
 }
-

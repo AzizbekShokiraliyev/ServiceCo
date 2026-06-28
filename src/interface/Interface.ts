@@ -1,50 +1,58 @@
 import type { ReactNode } from "react"
 import type React from "react"
 
-export type TaskStatus = "Todo" | "In Progress" | "Done"
-export type ClientDealStatus = "new" | "in_progress" | "won" | "lost"
-export type ProfileRole = 'admin' | 'technician' | 'customer';
-export type Skill = 'Electrical' | 'Plumbing' | 'HVAC';
-export type JobType = 'electrical' | 'plumbing' | 'hvac'
-export type JobStatus = 'on_way' | 'in_progress' | 'completed'
+// ============ ENUMS / TYPES ============
+export type ProfileRole = "admin" | "technician" | "customer"
+export type Skill = "Electrical" | "Plumbing" | "HVAC"
+export type JobType = "electrical" | "plumbing" | "hvac"
+export type JobStatus = "on_way" | "in_progress" | "completed"
+
+// ============ SUPABASE TABLES ============
 
 export interface Profile {
-  id: string;
-  full_name: string | null;
-  role: ProfileRole;
-  created_at: string;
-  updated_at: string;
+  id: string
+  full_name: string | null
+  phone: string | null
+  role: ProfileRole
+  created_at: string
 }
 
 export interface Technician {
-  id: string;
-  name: string;
-  skill: Skill;
+  id: string
+  profile_id: string | null
+  full_name: string
+  phone: string | null
+  skill: Skill
+  created_at: string
 }
 
 export interface Job {
-  id: string;
-  client_id: string | null;
-  client_name: string;
-  email: string | null;
-  location: string;
-  title: string;
-  job_type: JobType;
-  job_status: JobStatus;
-  technician_id: string | null;
-  start_time: string | null;
-  end_time: string | null;
-  duration_estimate: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-
-export interface StatCardProps {
+  id: string
   title: string
-  value: number
-  icon: ReactNode
+  client_name: string | null
+  client_phone: string | null
+  address: string | null
+  job_type: JobType | null
+  status: JobStatus
+  technician_id: string | null
+  scheduled_start: string | null
+  scheduled_end: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
 }
+
+// ============ JOINED TYPES ============
+
+export interface JobWithTechnician extends Job {
+  technician: Pick<Technician, "id" | "full_name" | "skill"> | null
+}
+
+export interface TechnicianWithProfile extends Technician {
+  profile: Pick<Profile, "id" | "full_name" | "phone"> | null
+}
+
+// ============ KANBAN ============
 
 export interface KanbanDeal {
   id: string
@@ -73,11 +81,24 @@ export interface KanbanColumnProps {
   onDelete?: () => void
 }
 
+// ============ SHARED COMPONENTS ============
 
-export interface Technician {
-  id: string
-  name: string
-  skill: Skill
+export interface StatCardProps {
+  title: string
+  value: number | string
+  subtext?: string
+  icon: ReactNode
+  iconColor?: string
+  valueColor?: string
+}
+
+export interface ConfirmDialogProps {
+  trigger: ReactNode
+  title: string
+  description: string
+  confirmLabel?: string
+  cancelLabel?: string
+  onConfirm: () => void
 }
 
 export interface DataTableColumn<T> {
@@ -103,13 +124,3 @@ export interface DataTableProps<T extends { id: string | number }> {
 export interface AboutUsDialogProps {
   children: React.ReactNode
 }
-
-export interface ConfirmDialogProps {
-  trigger: ReactNode
-  title: string
-  description: string
-  confirmLabel?: string
-  cancelLabel?: string
-  onConfirm: () => void
-}
-

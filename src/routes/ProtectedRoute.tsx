@@ -34,7 +34,6 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
 
 export default ProtectedRoute
 
-// YANGA QO'SHILGAN QISM: Bosh sahifa (/) uchun aqlli yo'naltirgich
 export const RootRedirect = () => {
   const { role, loading } = useUserRole()
 

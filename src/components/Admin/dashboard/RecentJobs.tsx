@@ -1,8 +1,8 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import { MapPin, User, Wind, Droplet, Zap } from "lucide-react"
 import { ListContainer } from "@/components/shared/ListContainer"
 import { InfoListItem } from "@/components/shared/InfoListItem"
-import { SearchBar } from "@/components/shared/SearchBar" // <-- SearchBar ni chaqirdik
+import { SearchBar } from "@/components/shared/SearchBar"
 import {
   Pagination,
   PaginationContent,
@@ -11,114 +11,43 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination"
-import type { JobStatus, JobType } from "@/interface/Interface"
+import type { JobType, JobStatus } from "@/interface/Interface"
+import { useJobs } from "@/hooks/useJobs"
 
-interface RecentJobItem {
-  id: string
-  client_name: string
-  location: string
-  job_type: JobType
-  duration_estimate: string
-  status: JobStatus
-  technician: string
-}
-
-const mockRecentJobs: RecentJobItem[] = [
-  {
-    id: "1",
-    client_name: "John Doe (Apartment 4B)",
-    location: "123 Maple St",
-    job_type: "hvac",
-    duration_estimate: "2.5 hours",
-    status: "in_progress",
-    technician: "Ali Valiyev",
-  },
-  {
-    id: "2",
-    client_name: "Burger Joint Kitchen",
-    location: "Gafur Gulam St, 12",
-    job_type: "plumbing",
-    duration_estimate: "4 hours",
-    status: "on_way",
-    technician: "Olim Toshov",
-  },
-  {
-    id: "3",
-    client_name: "Office Center 5th Floor",
-    location: "Amir Temur Ave, 45",
-    job_type: "electrical",
-    duration_estimate: "1.5 hours",
-    status: "completed",
-    technician: "Diyor Hasanov",
-  },
-  {
-    id: "4",
-    client_name: "Grand Supermarket",
-    location: "Nukus St, 88",
-    job_type: "electrical",
-    duration_estimate: "3 hours",
-    status: "on_way",
-    technician: "Ali Valiyev",
-  },
-  {
-    id: "5",
-    client_name: "Pizzeria Delivery Hub",
-    location: "Navoiy Ave, 21",
-    job_type: "plumbing",
-    duration_estimate: "1 hour",
-    status: "in_progress",
-    technician: "Olim Toshov",
-  },
-  {
-    id: "6",
-    client_name: "Tashkent City Mall",
-    location: "Navoiy Ave, 1",
-    job_type: "hvac",
-    duration_estimate: "5 hours",
-    status: "completed",
-    technician: "Diyor Hasanov",
-  },
-  {
-    id: "7",
-    client_name: "Grand Supermarket",
-    location: "Nukus St, 88",
-    job_type: "electrical",
-    duration_estimate: "3 hours",
-    status: "on_way",
-    technician: "Ali Valiyev",
-  },
-]
-
-const TypeStyles = {
+const TypeStyles: Record<
+  JobType,
+  { icon: React.ElementType; bg: string; text: string }
+> = {
   hvac: { icon: Wind, bg: "bg-orange-500/10", text: "text-orange-500" },
   plumbing: { icon: Droplet, bg: "bg-cyan-500/10", text: "text-cyan-500" },
   electrical: { icon: Zap, bg: "bg-yellow-500/10", text: "text-yellow-500" },
 }
 
-const StatusStyles = {
+const StatusStyles: Record<JobStatus, string> = {
   on_way: "text-muted-foreground border-border/60",
   in_progress: "text-blue-400 border-blue-500/30",
   completed: "text-emerald-400 border-emerald-500/30",
 }
 
-const StatusLabels = {
+const StatusLabels: Record<JobStatus, string> = {
   on_way: "Yo'lda",
   in_progress: "Jarayonda",
   completed: "Bajarildi",
 }
-
 
 const JOB_TABS = [
   { value: "active", label: "Faol ishlar" },
   { value: "completed", label: "Bajarilganlar" },
 ]
 
+const ITEMS_PER_PAGE = 4
+
 export function RecentJobs() {
   const [activeTab, setActiveTab] = useState("active")
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
 
-  const ITEMS_PER_PAGE = 4
+  const { data: jobs = [], isLoading } = useJobs()
 
   const handleTabChange = (value: string) => {
     setActiveTab(value)
@@ -130,79 +59,97 @@ export function RecentJobs() {
     setCurrentPage(1)
   }
 
-  const filteredJobs = mockRecentJobs.filter((job) => {
-    if (activeTab === "active" && job.status === "completed") return false
-    if (activeTab === "completed" && job.status !== "completed") return false
+  const filteredJobs = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    return jobs.filter((job) => {
+      if (activeTab === "active" && job.status === "completed") return false
+      if (activeTab === "completed" && job.status !== "completed") return false
 
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      const matchesClient = job.client_name.toLowerCase().includes(query)
-      const matchesLocation = job.location.toLowerCase().includes(query)
-      const matchesTech = job.technician.toLowerCase().includes(query)
+      if (query) {
+        const matchesClient = job.client_name?.toLowerCase().includes(query)
+        const matchesLocation = job.address?.toLowerCase().includes(query)
+        const matchesTech = job.technician?.full_name
+          ?.toLowerCase()
+          .includes(query)
+        return !!(matchesClient || matchesLocation || matchesTech)
+      }
 
-      if (!matchesClient && !matchesLocation && !matchesTech) return false
-    }
-    return true
-  })
+      return true
+    })
+  }, [jobs, activeTab, searchQuery])
 
-  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE) || 1
-  const currentJobs = filteredJobs.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  )
+  const totalPages = useMemo(() => {
+    return Math.ceil(filteredJobs.length / ITEMS_PER_PAGE) || 1
+  }, [filteredJobs.length])
 
-  const PaginationFooter = (
-    <Pagination>
-      <PaginationContent>
-        <PaginationItem>
-          <div
-            className={
-              currentPage === 1
-                ? "pointer-events-none opacity-40"
-                : "cursor-pointer"
-            }
-          >
+  const sanitizedCurrentPage =
+    currentPage > totalPages ? totalPages : currentPage
+
+  // ✅ Hozirgi sahifadagi joblarni ajratib olish (slice)
+  const currentJobs = useMemo(() => {
+    return filteredJobs.slice(
+      (sanitizedCurrentPage - 1) * ITEMS_PER_PAGE,
+      sanitizedCurrentPage * ITEMS_PER_PAGE
+    )
+  }, [filteredJobs, sanitizedCurrentPage])
+
+  // ✅ Pagignatsiya UI-ni keraksiz DOM-elementlarisiz va optimallashgan holda render qilish
+  const paginationFooter = useMemo(
+    () => (
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
             <PaginationPrevious
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            />
-          </div>
-        </PaginationItem>
-
-        {Array.from({ length: totalPages }, (_, i) => (
-          <PaginationItem key={i + 1}>
-            <div className="cursor-pointer">
-              <PaginationLink
-                isActive={currentPage === i + 1}
-                onClick={() => setCurrentPage(i + 1)}
-              >
-                {i + 1}
-              </PaginationLink>
-            </div>
-          </PaginationItem>
-        ))}
-
-        <PaginationItem>
-          <div
-            className={
-              currentPage === totalPages
-                ? "pointer-events-none opacity-40"
-                : "cursor-pointer"
-            }
-          >
-            <PaginationNext
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+              onClick={
+                sanitizedCurrentPage > 1
+                  ? () => setCurrentPage((p) => p - 1)
+                  : undefined
+              }
+              className={
+                sanitizedCurrentPage === 1
+                  ? "pointer-events-none opacity-40"
+                  : "cursor-pointer"
               }
             />
-          </div>
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+          </PaginationItem>
+
+          {Array.from({ length: totalPages }, (_, i) => {
+            const page = i + 1
+            return (
+              <PaginationItem key={page}>
+                <PaginationLink
+                  isActive={sanitizedCurrentPage === page}
+                  onClick={() => setCurrentPage(page)}
+                  className="cursor-pointer"
+                >
+                  {page}
+                </PaginationLink>
+              </PaginationItem>
+            )
+          })}
+
+          <PaginationItem>
+            <PaginationNext
+              onClick={
+                sanitizedCurrentPage < totalPages
+                  ? () => setCurrentPage((p) => p + 1)
+                  : undefined
+              }
+              className={
+                sanitizedCurrentPage === totalPages
+                  ? "pointer-events-none opacity-40"
+                  : "cursor-pointer"
+              }
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    ),
+    [sanitizedCurrentPage, totalPages]
   )
 
   return (
     <div className="space-y-3">
-      {/* SearchBar ishlatildi */}
       <SearchBar
         tabs={JOB_TABS}
         activeTab={activeTab}
@@ -213,37 +160,58 @@ export function RecentJobs() {
       />
 
       <ListContainer
-        title="Recent Job Assignments"
-        footer={PaginationFooter}
+        title="So'nggi ishlar"
+        footer={paginationFooter}
         className="h-[510px]"
       >
-        {currentJobs.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-3 p-1">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div
+                key={i}
+                className="flex animate-pulse items-center gap-3 rounded-xl border border-border/40 bg-muted/20 p-3.5"
+              >
+                <div className="h-10 w-10 shrink-0 rounded-xl bg-muted/40" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-1/4 rounded-md bg-muted/40" />
+                  <div className="h-3 w-1/2 rounded-md bg-muted/40" />
+                </div>
+                <div className="h-6 w-16 rounded-md bg-muted/40" />
+              </div>
+            ))}
+          </div>
+        ) : currentJobs.length === 0 ? (
           <div className="flex h-40 items-center justify-center rounded-xl border border-dashed text-sm text-muted-foreground">
             Buyurtmalar topilmadi.
           </div>
         ) : (
           currentJobs.map((job) => {
-            const typeConfig = TypeStyles[job.job_type]
+            const typeConfig = TypeStyles[job.job_type ?? "electrical"]
             return (
               <InfoListItem
                 key={job.id}
                 icon={typeConfig.icon}
                 iconBg={typeConfig.bg}
                 iconColor={typeConfig.text}
-                title={job.client_name}
-                duration={job.duration_estimate}
+                title={job.client_name ?? "Noma'lum"}
                 statusLabel={StatusLabels[job.status] || job.status}
-                statusClassName={StatusStyles[job.status]}
-
+                statusClassName={StatusStyles[job.status] || ""}
                 subtitle={
                   <div className="flex items-center gap-3">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-3 w-3" /> {job.location}
-                    </span>
-                    <span>•</span>
-                    <span className="flex items-center gap-1 font-medium text-foreground/80">
-                      <User className="h-3 w-3" /> {job.technician}
-                    </span>
+                    {job.address && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" /> {job.address}
+                      </span>
+                    )}
+                    {job.technician && (
+                      <>
+                        <span>•</span>
+                        <span className="flex items-center gap-1 font-medium text-foreground/80">
+                          <User className="h-3 w-3" />{" "}
+                          {job.technician.full_name}
+                        </span>
+                      </>
+                    )}
                   </div>
                 }
               />

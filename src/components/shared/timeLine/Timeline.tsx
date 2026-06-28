@@ -12,11 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-const HOURS = Array.from({ length: 24 }, (_, i) => i)
-const HOUR_WIDTH = 120
-const TOTAL_WIDTH = HOUR_WIDTH * 24
-const ROW_HEIGHT = 72
-const NAME_COL_WIDTH = 100
+export const HOURS = Array.from({ length: 24 }, (_, i) => i)
+export const HOUR_WIDTH = 120
+export const TOTAL_WIDTH = HOUR_WIDTH * 24
+export const ROW_HEIGHT = 72
+export const NAME_COL_WIDTH = 100
 
 const timeToMinutes = (t: string) => {
   const [h, m] = t.split(":").map(Number)

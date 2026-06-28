@@ -1,24 +1,41 @@
 import { Wrench, Users, AlertCircle } from "lucide-react"
 import { StatCard } from "@/components/shared/StatCard"
 import { RecentJobs } from "./RecentJobs"
+import { useJobs } from "@/hooks/useJobs"
+import { useTechnicians } from "@/hooks/useTechnicians"
+
+function getTodayPrefix() {
+  return new Date().toISOString().split("T")[0]
+}
 
 export default function Dashboard() {
-  const statCardInfo = [
+  const { data: jobs = [], isLoading: jobsLoading } = useJobs()
+  const { data: technicians = [], isLoading: techLoading } = useTechnicians()
+
+  const todayPrefix = getTodayPrefix()
+
+  const todayJobCount = jobs.filter((j) =>
+    j.created_at.startsWith(todayPrefix)
+  ).length
+  const unassignedJobCount = jobs.filter((j) => !j.technician_id).length
+  const activeTechCount = technicians.length
+
+  const stats = [
     {
-      title: "Active Technicians",
-      value: 12,
+      title: "Faol texniklar",
+      value: techLoading ? "…" : activeTechCount,
       icon: Users,
       iconColor: "text-blue-500",
     },
     {
-      title: "Total Jobs Today",
-      value: 24,
+      title: "Bugungi ishlar",
+      value: jobsLoading ? "…" : todayJobCount,
       icon: Wrench,
       iconColor: "text-amber-500",
     },
     {
-      title: "Unassigned Dispatches",
-      value: 3,
+      title: "Tayinlanmagan ishlar",
+      value: jobsLoading ? "…" : unassignedJobCount,
       icon: AlertCircle,
       iconColor: "text-destructive",
     },
@@ -27,13 +44,13 @@ export default function Dashboard() {
   return (
     <div className="mx-auto space-y-6 p-2">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {statCardInfo.map((item, index) => (
+        {stats.map((stat) => (
           <StatCard
-            key={index}
-            title={item.title}
-            value={item.value}
-            icon={item.icon}
-            iconColor={item.iconColor}
+            key={stat.title}
+            title={stat.title}
+            value={stat.value}
+            icon={stat.icon}
+            iconColor={stat.iconColor}
           />
         ))}
       </div>

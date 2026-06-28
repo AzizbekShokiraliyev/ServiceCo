@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
   DndContext,
   DragOverlay,
@@ -6,7 +6,6 @@ import {
   type DragStartEvent,
   pointerWithin,
 } from "@dnd-kit/core"
-import { arrayMove } from "@dnd-kit/sortable"
 import { LayoutGrid, CalendarDays } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { KanbanColumn } from "./KanbanColumn"
@@ -16,6 +15,12 @@ import DeleteWorker from "./actionWorker/DeleteWorker"
 import type { KanbanDeal, Skill, Technician } from "@/interface/Interface"
 import { TimelineView } from "./timleLine/TimelineView"
 import { TimelineCard } from "./timleLine/TimelineCard"
+import {
+  useTechnicians,
+  useTechnicianCreate,
+  useTechnicianDelete,
+} from "@/hooks/useTechnicians"
+import { useJobs, useJobUpdate } from "@/hooks/useJobs"
 
 const SKILL_LABELS: Record<Skill, string> = {
   Electrical: "Elektrik",
@@ -25,122 +30,94 @@ const SKILL_LABELS: Record<Skill, string> = {
 
 const SKILL_FILTERS = ["Barchasi", "Electrical", "Plumbing", "HVAC"] as const
 
-const INITIAL_TECHNICIANS: Technician[] = [
-  { id: "t1", name: "Alisher", skill: "Electrical" },
-  { id: "t2", name: "Bobur", skill: "Plumbing" },
-  { id: "t3", name: "Davron", skill: "HVAC" },
-  { id: "t4", name: "Eldor", skill: "Electrical" },
-  { id: "t5", name: "Farrux", skill: "Plumbing" },
-  { id: "t6", name: "Giyos", skill: "HVAC" },
-  { id: "t7", name: "Hasan", skill: "Electrical" },
-  { id: "t8", name: "Ilhom", skill: "Plumbing" },
-  { id: "t9", name: "Jasur", skill: "HVAC" },
-  { id: "t10", name: "Kamol", skill: "Electrical" },
-]
-
-const MOCK_DEALS: KanbanDeal[] = [
-  {
-    id: "d1",
-    client: "Aziz Karimov",
-    title: "Veb-sayt yaratish",
-    status: "Works",
-  },
-  {
-    id: "d2",
-    client: "Dilshod Tursunov",
-    title: "CRM integratsiyasi",
-    status: "Works",
-  },
-  {
-    id: "d3",
-    client: "Nodira Yusupova",
-    title: "Mobil ilova",
-    status: "Alisher",
-    startTime: "09:00",
-    endTime: "13:00",
-  },
-  {
-    id: "d4",
-    client: "Sherzod Aliyev",
-    title: "Logistika tizimi",
-    status: "Bobur",
-    startTime: "10:00",
-    endTime: "12:00",
-  },
-  {
-    id: "d5",
-    client: "Gulnora Rashidova",
-    title: "Onlayn do'kon",
-    status: "Davron",
-    startTime: "14:00",
-    endTime: "17:00",
-  },
-  {
-    id: "d6",
-    client: "Botir Nazarov",
-    title: "ERP tizimi",
-    status: "Eldor",
-    startTime: "08:00",
-    endTime: "10:00",
-  },
-]
-
 type ViewMode = "kanban" | "timeline"
 
 const Kanban = () => {
-  const [technicians, setTechnicians] =
-    useState<Technician[]>(INITIAL_TECHNICIANS)
-  const [deals, setDeals] = useState<KanbanDeal[]>(MOCK_DEALS)
   const [activeDeal, setActiveDeal] = useState<KanbanDeal | null>(null)
   const [skillFilter, setSkillFilter] =
     useState<(typeof SKILL_FILTERS)[number]>("Barchasi")
   const [viewMode, setViewMode] = useState<ViewMode>("kanban")
+
+  // ✅ Supabase hooks
+  const { data: techniciansData = [], isLoading: techLoading } =
+    useTechnicians()
+  const { data: jobsData = [], isLoading: jobsLoading } = useJobs()
+  const { mutate: createTechnician } = useTechnicianCreate()
+  const { mutate: deleteTechnician } = useTechnicianDelete()
+  const { mutate: updateJob } = useJobUpdate()
+
+  // ✅ Supabase Technician → lokal Technician formatiga o'tkazish
+  const technicians: Technician[] = useMemo(
+    () =>
+      techniciansData.map((t) => ({
+        id: t.id,
+        full_name: t.full_name,
+        skill: t.skill,
+        profile_id: t.profile_id,
+        phone: t.phone,
+        created_at: t.created_at,
+      })),
+    [techniciansData]
+  )
+
+  // ✅ Supabase Job → KanbanDeal formatiga o'tkazish
+  const deals: KanbanDeal[] = useMemo(
+    () =>
+      jobsData.map((job) => ({
+        id: job.id,
+        client: job.client_name ?? "Noma'lum",
+        title: job.title,
+        status: job.technician?.full_name ?? "Works",
+        startTime: job.scheduled_start ?? undefined,
+        endTime: job.scheduled_end ?? undefined,
+      })),
+    [jobsData]
+  )
 
   const visibleTechnicians =
     skillFilter === "Barchasi"
       ? technicians
       : technicians.filter((t) => t.skill === skillFilter)
 
+  // ✅ Texnik qo'shish
   const addWorker = (name: string, skill: Skill) => {
-    setTechnicians((prev) => [...prev, { id: `t${Date.now()}`, name, skill }])
+    createTechnician({ full_name: name, skill })
   }
 
+  // ✅ Texnik o'chirish
   const deleteWorker = (id: string) => {
-    const tech = technicians.find((t) => t.id === id)
-    setTechnicians((prev) => prev.filter((t) => t.id !== id))
-    if (tech) {
-      setDeals((prev) =>
-        prev.map((d) =>
-          d.status === tech.name ? { ...d, status: "Works" } : d
-        )
-      )
-    }
+    deleteTechnician(id)
   }
 
+  // ✅ Vaqt o'zgartirish
   const handleTimeChange = (id: string, startTime: string, endTime: string) => {
-    setDeals((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, startTime, endTime } : d))
-    )
+    updateJob({
+      id,
+      scheduled_start: startTime,
+      scheduled_end: endTime,
+    })
   }
 
+  // ✅ Qator o'zgartirish (timeline da)
   const handleRowChange = (id: string, newRowId: string) => {
-    setDeals((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, status: newRowId } : d))
-    )
+    const tech = technicians.find((t) => t.full_name === newRowId)
+    updateJob({
+      id,
+      technician_id: tech?.id ?? null,
+    })
   }
 
+  // ✅ Timelinedan olib tashlash
   const handleRemoveFromTimeline = (id: string) => {
-    setDeals((prev) =>
-      prev.map((d) =>
-        d.id === id
-          ? { ...d, status: "Works", startTime: undefined, endTime: undefined }
-          : d
-      )
-    )
+    updateJob({
+      id,
+      technician_id: null,
+      scheduled_start: null,
+      scheduled_end: null,
+    })
   }
 
-
-  const allColumns = ["Works", ...technicians.map((t) => t.name)]
+  const allColumns = ["Works", ...technicians.map((t) => t.full_name)]
 
   const findColumn = (id: string): string | null => {
     if (allColumns.includes(id)) return id
@@ -161,20 +138,22 @@ const Kanban = () => {
     const overId = over.id as string
     if (activeId === overId) return
 
+    // Timeline'ga drag
     if (overId.startsWith("timeline-")) {
       const techName = overId.replace("timeline-", "")
-      const tech = technicians.find((t) => t.name === techName)
+      const tech = technicians.find((t) => t.full_name === techName)
       if (!tech) return
 
       const deal = deals.find((d) => d.id === activeId)
       const startTime = deal?.startTime ?? "09:00"
       const endTime = deal?.endTime ?? "10:00"
 
-      setDeals((prev) =>
-        prev.map((d) =>
-          d.id === activeId ? { ...d, status: techName, startTime, endTime } : d
-        )
-      )
+      updateJob({
+        id: activeId,
+        technician_id: tech.id,
+        scheduled_start: startTime,
+        scheduled_end: endTime,
+      })
       return
     }
 
@@ -183,20 +162,39 @@ const Kanban = () => {
     if (!activeContainer || !overContainer) return
     if (overContainer === "Works") return
 
-    const activeIndex = deals.findIndex((d) => d.id === activeId)
-    const overIndex = deals.findIndex((d) => d.id === overId)
-    if (activeIndex === -1) return
-
-    const reordered =
-      overIndex !== -1 ? arrayMove(deals, activeIndex, overIndex) : [...deals]
-    setDeals(
-      reordered.map((d) =>
-        d.id === activeId ? { ...d, status: overContainer } : d
-      )
-    )
+    // Texnikka tayinlash
+    const tech = technicians.find((t) => t.full_name === overContainer)
+    updateJob({
+      id: activeId,
+      technician_id: tech?.id ?? null,
+    })
   }
 
   const unassignedDeals = deals.filter((d) => d.status === "Works")
+
+  if (techLoading || jobsLoading) {
+    return (
+      <div className="flex h-[calc(100vh-160px)] min-w-full gap-6 overflow-hidden px-4 py-2">
+        {/* Unassigned column skeleton */}
+        <div className="flex w-64 flex-col rounded-xl border border-border/40 bg-muted/20 p-4 animate-pulse">
+          <div className="mb-4 h-5 w-1/2 rounded bg-muted/40" />
+          <div className="space-y-3">
+            <div className="h-20 rounded-xl bg-muted/40" />
+            <div className="h-20 rounded-xl bg-muted/40" />
+          </div>
+        </div>
+        {/* Column skeletons */}
+        <div className="flex flex-1 gap-4 overflow-hidden">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex w-52 flex-col rounded-xl border border-border/40 bg-muted/20 p-4 animate-pulse">
+              <div className="mb-4 h-5 w-3/4 rounded bg-muted/40" />
+              <div className="h-20 rounded-xl bg-muted/40" />
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-full overflow-x-auto overflow-y-hidden px-4 py-2">
@@ -258,10 +256,10 @@ const Kanban = () => {
               {visibleTechnicians.map((tech) => (
                 <KanbanColumn
                   key={tech.id}
-                  status={tech.name}
-                  deals={deals.filter((d) => d.status === tech.name)}
+                  status={tech.full_name}
+                  deals={deals.filter((d) => d.status === tech.full_name)}
                   heightClass="h-[280px]"
-                  widthClass="w-53"
+                  widthClass="w-52"
                   subtitle={SKILL_LABELS[tech.skill]}
                   isDropDisabled={false}
                   onTimeChange={handleTimeChange}
@@ -280,7 +278,6 @@ const Kanban = () => {
             onRowChange={handleRowChange}
           />
         )}
-
 
         <DragOverlay>
           {activeDeal ? (

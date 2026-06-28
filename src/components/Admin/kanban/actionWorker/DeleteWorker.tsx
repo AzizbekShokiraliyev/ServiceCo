@@ -60,7 +60,7 @@ const DeleteWorker = ({ workers, onDelete }: DeleteWorkerProps) => {
               ) : (
                 workers.map((worker) => (
                   <tr key={worker.id} className="border-t">
-                    <td className="p-3 font-medium">{worker.name}</td>
+                    <td className="p-3 font-medium">{worker.full_name}</td>
                     <td className="p-3 text-muted-foreground">
                       {SKILL_LABELS[worker.skill] || worker.skill}
                     </td>
@@ -77,7 +77,7 @@ const DeleteWorker = ({ workers, onDelete }: DeleteWorkerProps) => {
                           </Button>
                         }
                         title="Ishchini o'chirish"
-                        description={`"${worker.name}" ni o'chirmoqchimisiz? Unga tayinlangan barcha ishlar "Tayinlanmagan ishlar" ustuniga qaytariladi.`}
+                        description={`"${worker.full_name}" ni o'chirmoqchimisiz? Unga tayinlangan barcha ishlar "Tayinlanmagan ishlar" ustuniga qaytariladi.`}
                         onConfirm={() => onDelete(worker.id)}
                       />
                     </td>
