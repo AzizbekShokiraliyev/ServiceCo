@@ -1,4 +1,3 @@
-// src/components/Admin/kanban/timeline/timelineUtils.ts
 import type { PositionedEvent, TimelineEvent } from "@/interface/Interface"
 
 export const timeToMinutes = (t: string): number => {

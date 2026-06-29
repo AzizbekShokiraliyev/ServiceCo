@@ -2,16 +2,13 @@ import { Navigate } from "react-router-dom"
 import { useUserRole } from "@/hooks/useUserRole"
 import LayoutHeader from "./LayoutHeader"
 import LayoutMain from "./LayoutMain"
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner"
 
 const AppLayout = () => {
   const { role, loading } = useUserRole()
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Yuklanmoqda...
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (role) {
@@ -32,4 +29,3 @@ const AppLayout = () => {
 }
 
 export default AppLayout
-

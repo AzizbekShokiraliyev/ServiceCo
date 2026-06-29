@@ -60,20 +60,17 @@ export interface KanbanDeal {
 
 export interface KanbanCardProps {
   deal: KanbanDeal
-  onTimeChange?: (id: string, startTime: string, endTime: string) => void
+  editable?: boolean
 }
 
 export interface KanbanColumnProps {
   status: string
-  deals: KanbanDeal[]
   heightClass?: string
   widthClass?: string
   emptyText?: string
   emptyVariant?: "drop" | "info"
   subtitle?: string
   isDropDisabled?: boolean
-  onTimeChange?: (id: string, startTime: string, endTime: string) => void
-  onDelete?: () => void
 }
 
 export interface StatCardProps {
@@ -135,24 +132,6 @@ export interface TimelineEvent {
   endTime: string
 }
 
-export interface TimelineViewProps {
-  technicians: Technician[]
-  deals: KanbanDeal[]
-  unassigned: KanbanDeal[]
-  onRemoveFromTimeline: (id: string) => void
-  onTimeMove: (id: string, startTime: string, endTime: string) => void
-  onRowChange: (id: string, newRowId: string) => void
-}
-
-export interface AddWorkerModalProps {
-  onAdd: (name: string, skill: Skill) => void
-}
-
-export interface DeleteWorkerProps {
-  workers: Technician[]
-  onDelete: (id: string) => void
-}
-
 export interface PositionedEvent extends TimelineEvent {
   laneIndex: number
   laneCount: number
@@ -179,10 +158,6 @@ export interface TimelineGridRowProps {
   onEventRowChange?: (id: string, newRowId: string) => void
 }
 
-// export interface DealCardProps {
-//   deal: KanbanDeal
-//   isDragging?: boolean
-// }
 
 export interface InfoListItemProps {
   icon: React.ElementType
@@ -238,4 +213,26 @@ export interface JobTypeConfig {
   icon: LucideIcon
   bg: string
   text: string
+}
+
+export interface TimelineTimeEditDialogProps {
+  event: TimelineEvent
+  rows: TimelineRow[]
+  onSave: (startTime: string, endTime: string) => void
+  onRowChange?: (newRowId: string) => void
+}
+
+export interface PendingAssign {
+  dealId: string
+  technicianId: string
+  technicianName: string
+}
+
+export interface TimelineBlockProps {
+  event: PositionedEvent
+  rows?: TimelineRow[]
+  readOnly?: boolean
+  onMove?: (id: string, startTime: string, endTime: string) => void
+  onRemove?: (id: string) => void
+  onRowChange?: (id: string, newRowId: string) => void
 }

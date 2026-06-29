@@ -1,6 +1,7 @@
 import { Navigate, Outlet } from "react-router-dom"
 import { useUserRole } from "@/hooks/useUserRole"
 import type { ProfileRole } from "@/interface/Interface"
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner"
 
 interface ProtectedRouteProps {
   allowedRoles: ProfileRole[]
@@ -10,11 +11,7 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   const { role, loading } = useUserRole()
 
   if (loading) {
-    return (
-      <div className="flex h-screen items-center justify-center">
-        Yuklanmoqda...
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!role) return <Navigate to="/login" replace />

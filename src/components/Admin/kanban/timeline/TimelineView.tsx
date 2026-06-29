@@ -1,17 +1,10 @@
-// src/components/Admin/kanban/timeline/TimelineView.tsx
-import { Badge } from "@/components/ui/badge"
-import {
-  Timeline,
-  type TimelineRow,
-  type TimelineEvent,
-} from "@/components/Admin/kanban/timeline/Timeline"
+import { Timeline, type TimelineRow, type TimelineEvent } from "./Timeline"
 import type { KanbanDeal, Technician } from "@/interface/Interface"
 import { LAYOUT } from "../constants/kanbanConstants"
 import { KanbanCard } from "../KanbanCard"
-
-// ✅ Utils dan tekshiruvchi funksiyani chaqiramiz
 import { hasTimeConflict } from "./utils/timelineUtils"
-import { toast } from "sonner" // ✅ Sonner kutubxonasidan import qilingan
+import { toast } from "sonner"
+import { useKanban } from "../context/KanbanContext"
 
 const toRows = (technicians: Technician[]): TimelineRow[] =>
   technicians.map((t) => ({
@@ -26,8 +19,6 @@ const toEvents = (deals: KanbanDeal[]): TimelineEvent[] =>
     .filter((d) => d.startTime && d.endTime && d.status !== "Works")
     .map((d) => ({
       id: d.id,
-      // ⚠️ DIQQAT: Agar qatorlar 'full_name' bo'lsa, 'status' emas xodim ismi kelishi kerak.
-      // Backenddan nima kelsa shunga moslang (masalan: d.technicianName)
       rowId: d.status,
       title: d.title,
       subtitle: d.client,
@@ -35,114 +26,83 @@ const toEvents = (deals: KanbanDeal[]): TimelineEvent[] =>
       endTime: d.endTime!,
     }))
 
-interface TimelineViewProps {
-  technicians: Technician[]
-  deals: KanbanDeal[]
-  unassigned: KanbanDeal[]
-  onRemoveFromTimeline: (id: string) => void
-  onTimeMove: (id: string, startTime: string, endTime: string) => void
-  onRowChange: (id: string, newRowId: string) => void
+const CONFLICT_MESSAGES = {
+  time: "Bu ustaning tanlangan vaqtda boshqa ishi bor. Boshqa vaqt tanlang.",
+  row: "Bu usta tanlangan vaqtda band. Boshqa ustani tanlang.",
 }
 
-export const TimelineView = ({
-  technicians,
-  deals,
-  unassigned,
-  onRemoveFromTimeline,
-  onTimeMove,
-  onRowChange,
-}: TimelineViewProps) => {
+export const TimelineView = () => {
+  const {
+    visibleTechnicians,
+    deals,
+    unassignedDeals,
+    handleRemoveFromTimeline,
+    handleTimeChange,
+    handleRowChange,
+  } = useKanban()
+
   const events = toEvents(deals)
-  const rows = toRows(technicians)
+  const rows = toRows(visibleTechnicians)
 
-  // ─── 1. KARTA VAQTINI O'ZGARTIRISH (YOKI CHO'ZISH) UCHUN WRAPPER ───
-  const handleTimeMove = (
-    id: string,
-    newStartTime: string,
-    newEndTime: string
-  ) => {
+  const handleTimeMove = (id: string, start: string, end: string) => {
     const event = events.find((e) => e.id === id)
     if (!event) return
-
-    // Ustaning aynan shu vaqtda boshqa ishi bor-yo'qligini tekshirish
-    const isConflict = hasTimeConflict(
-      events,
-      event.rowId,
-      newStartTime,
-      newEndTime,
-      id
-    )
-
-    if (isConflict) {
-      // ✅ alert va window.toast o'rniga toast.error ishlatildi
-      toast.error(
-        "Bu ustaning tanlangan vaqt oralig'ida boshqa ishi bor! Iltimos, boshqa bo'sh vaqt tanlang."
-      )
-      return // Saqlash to'xtatiladi, karta eski joyiga qaytadi
-    }
-
-    // Hammasi joyida, saqlaymiz
-    onTimeMove(id, newStartTime, newEndTime)
-  }
-
-  const handleRowChange = (id: string, newRowId: string) => {
-    const event = events.find((e) => e.id === id)
-    if (!event) return
-
-    const isConflict = hasTimeConflict(
-      events,
-      newRowId,
-      event.startTime,
-      event.endTime,
-      id
-    )
-
-    if (isConflict) {
-      toast.error(
-        "Yangi tanlangan usta bu vaqtda band! Iltimos, boshqa ustani tanlang."
-      )
+    if (hasTimeConflict(events, event.rowId, start, end, id)) {
+      toast.error(CONFLICT_MESSAGES.time)
       return
     }
+    handleTimeChange(id, start, end)
+  }
 
-    onRowChange(id, newRowId)
+  const handleRowMove = (id: string, newRowId: string) => {
+    const event = events.find((e) => e.id === id)
+    if (!event) return
+    if (hasTimeConflict(events, newRowId, event.startTime, event.endTime, id)) {
+      toast.error(CONFLICT_MESSAGES.row)
+      return
+    }
+    handleRowChange(id, newRowId)
   }
 
   return (
     <div className={`flex ${LAYOUT.BOARD_HEIGHT} gap-4`}>
+      {/* Unassigned panel — KanbanColumn bilan bir xil stil */}
       <div
-        className={`flex ${LAYOUT.UNASSIGNED_WIDTH} shrink-0 flex-col rounded-xl border border-border/40 bg-muted/30 p-3`}
+        className={`flex ${LAYOUT.UNASSIGNED_WIDTH} shrink-0 flex-col rounded-xl border border-border/40 bg-muted/30 p-4`}
       >
-        <div className="mb-3 flex items-center gap-2">
-          <span className="text-xs font-bold tracking-wider text-foreground/80 uppercase">
-            Works
-          </span>
-          <Badge
-            variant="outline"
-            className="ml-auto bg-background text-foreground/70"
-          >
-            {unassigned.length}
-          </Badge>
+        <div className="mb-4 px-1">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold tracking-wider text-foreground/80 uppercase">
+              Works
+            </h3>
+            <span className="rounded-md border border-border/20 bg-background px-2 py-0.5 text-xs font-medium text-foreground/70 shadow-sm">
+              {unassignedDeals.length}
+            </span>
+          </div>
         </div>
 
-        <div className="flex-1 space-y-2 overflow-y-auto">
-          {unassigned.length === 0 ? (
-            <p className="mt-4 text-center text-xs text-muted-foreground/50 italic">
+        <div className="flex-1 scrollbar-thin space-y-3 overflow-y-auto p-0.5 select-none">
+          {unassignedDeals.length === 0 ? (
+            <div className="flex h-20 items-center justify-center text-xs text-muted-foreground/40 italic">
               Hammasi tayinlangan
-            </p>
+            </div>
           ) : (
-            unassigned.map((deal) => <KanbanCard key={deal.id} deal={deal} />)
+            unassignedDeals.map((deal) => (
+              <KanbanCard key={deal.id} deal={deal} />
+            ))
           )}
         </div>
       </div>
 
+      {/* Timeline */}
       <div className="relative min-w-0 flex-1">
         <Timeline
           rows={rows}
           events={events}
           height={LAYOUT.BOARD_HEIGHT}
           onEventMove={handleTimeMove}
-          onEventRemove={onRemoveFromTimeline}
-          onEventRowChange={handleRowChange}
+          onEventRemove={handleRemoveFromTimeline}
+          onEventRowChange={handleRowMove}
         />
       </div>
     </div>

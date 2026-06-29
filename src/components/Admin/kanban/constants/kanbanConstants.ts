@@ -5,3 +5,5 @@ export const LAYOUT = {
   COLUMN_HEIGHT: "h-[280px]",
   COLUMN_WIDTH: "w-52",
 } as const
+
+export const SKILL_FILTERS = ["Barchasi", "Electrical", "Plumbing", "HVAC"] as const

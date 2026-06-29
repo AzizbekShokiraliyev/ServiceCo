@@ -22,6 +22,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 import { useQueryClient } from "@tanstack/react-query"
 import { useJobById, useJobStatusUpdate } from "@/hooks/useJobs"
 import type { JobStatus } from "@/interface/Interface"
+import { LoadingSpinner } from "@/components/shared/LoadingSpinner"
 
 function InfoCard({
   icon: Icon,
@@ -78,11 +79,7 @@ export default function ClientInfo() {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex h-[50vh] items-center justify-center text-sm text-muted-foreground">
-        Yuklanmoqda...
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   if (!job) {

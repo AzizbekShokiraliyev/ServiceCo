@@ -3,7 +3,7 @@ import { MapPin, User } from "lucide-react"
 import { ListContainer } from "@/components/shared/ListContainer"
 import { InfoListItem } from "@/components/shared/InfoListItem"
 import { SearchBar } from "@/components/shared/SearchBar"
-import { AppPagination } from "@/components/shared/AppPagination" // <-- Yaratilgan komponentni chaqirdik
+import { AppPagination } from "@/components/shared/AppPagination"
 import { useJobs } from "@/hooks/useJobs"
 import { JOB_STATUS_CONFIG, JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 

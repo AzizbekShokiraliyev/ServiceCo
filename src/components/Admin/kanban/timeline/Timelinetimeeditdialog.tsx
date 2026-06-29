@@ -15,18 +15,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import type { TimelineEvent, TimelineRow } from "@/interface/Interface"
+import type { TimelineTimeEditDialogProps } from "@/interface/Interface"
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
-interface TimelineTimeEditDialogProps {
-  event: TimelineEvent
-  rows: TimelineRow[]
-  onSave: (startTime: string, endTime: string) => void
-  onRowChange?: (newRowId: string) => void
+function validateTimes(start: string, end: string): string {
+  if (!start || !end) return "Boshlanish va tugash vaqtini kiriting"
+  if (start >= end) return "Tugash vaqti boshlanishidan keyin bo'lishi kerak"
+  return ""
 }
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export const TimelineTimeEditDialog = ({
   event,
@@ -37,44 +32,39 @@ export const TimelineTimeEditDialog = ({
   const [open, setOpen] = useState(false)
   const [start, setStart] = useState(event.startTime)
   const [end, setEnd] = useState(event.endTime)
-  const [selectedRowId, setSelectedRowId] = useState(event.rowId)
+  const [rowId, setRowId] = useState(event.rowId)
   const [error, setError] = useState("")
 
-  const handleOpenChange = (next: boolean) => {
+  const handleOpen = (next: boolean) => {
     setOpen(next)
     if (next) {
       setStart(event.startTime)
       setEnd(event.endTime)
-      setSelectedRowId(event.rowId)
+      setRowId(event.rowId)
       setError("")
     }
   }
 
   const handleSave = () => {
-    if (!start || !end) {
-      setError("Boshlanish va tugash vaqtini kiriting")
+    const err = validateTimes(start, end)
+    if (err) {
+      setError(err)
       return
     }
-    if (start >= end) {
-      setError("Tugash vaqti boshlanishidan keyin bo'lishi kerak")
-      return
-    }
-    setError("")
+
     onSave(start, end)
-    if (onRowChange && selectedRowId !== event.rowId) {
-      onRowChange(selectedRowId)
-    }
+    if (onRowChange && rowId !== event.rowId) onRowChange(rowId)
     setOpen(false)
   }
 
   return (
-    <Popover open={open} onOpenChange={handleOpenChange}>
+    <Popover open={open} onOpenChange={handleOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
           onMouseDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
-          className="pointer-events-auto flex w-fit items-center gap-0.5 text-[10px] text-muted-foreground transition-colors select-none hover:text-foreground hover:underline"
+          className="pointer-events-auto flex w-fit items-center gap-1 text-[10px] text-muted-foreground transition-colors select-none hover:text-foreground"
         >
           <Clock className="h-2.5 w-2.5" />
           {event.startTime} – {event.endTime}
@@ -82,16 +72,13 @@ export const TimelineTimeEditDialog = ({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-56 space-y-3 p-3 text-xs"
+        className="w-52 space-y-3 p-3"
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="space-y-1">
-          <Label htmlFor="tl-start" className="text-[10px]">
-            Boshlanish vaqti
-          </Label>
+        <div className="space-y-1.5">
+          <Label className="text-[11px]">Boshlanish vaqti</Label>
           <Input
-            id="tl-start"
             type="time"
             value={start}
             onChange={(e) => setStart(e.target.value)}
@@ -99,12 +86,9 @@ export const TimelineTimeEditDialog = ({
           />
         </div>
 
-        <div className="space-y-1">
-          <Label htmlFor="tl-end" className="text-[10px]">
-            Tugash vaqti
-          </Label>
+        <div className="space-y-1.5">
+          <Label className="text-[11px]">Tugash vaqti</Label>
           <Input
-            id="tl-end"
             type="time"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
@@ -113,11 +97,11 @@ export const TimelineTimeEditDialog = ({
         </div>
 
         {onRowChange && rows.length > 0 && (
-          <div className="space-y-1">
-            <Label className="text-[10px]">Ishchi</Label>
-            <Select value={selectedRowId} onValueChange={setSelectedRowId}>
+          <div className="space-y-1.5">
+            <Label className="text-[11px]">Ishchi</Label>
+            <Select value={rowId} onValueChange={setRowId}>
               <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Ishchini tanlang" />
+                <SelectValue placeholder="Tanlang" />
               </SelectTrigger>
               <SelectContent>
                 {rows.map((row) => (
@@ -130,7 +114,7 @@ export const TimelineTimeEditDialog = ({
           </div>
         )}
 
-        {error && <p className="text-[10px] text-destructive">{error}</p>}
+        {error && <p className="text-[11px] text-destructive">{error}</p>}
 
         <Button
           type="button"

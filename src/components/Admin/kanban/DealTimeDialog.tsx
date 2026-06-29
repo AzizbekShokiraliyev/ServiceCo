@@ -48,7 +48,6 @@ export const DealTimeDialog = ({
     setOpen(false)
   }
 
-  // ✅ Input keydown — Enter saqlaydi, drag listener'ga yetmaydi
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     e.stopPropagation() // drag bloklash
     if (e.key === "Enter") handleSave()
@@ -84,7 +83,7 @@ export const DealTimeDialog = ({
             type="time"
             value={start}
             onChange={(e) => setStart(e.target.value)}
-            onKeyDown={handleInputKeyDown} // ✅
+            onKeyDown={handleInputKeyDown}
           />
         </div>
 
@@ -95,7 +94,7 @@ export const DealTimeDialog = ({
             type="time"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
-            onKeyDown={handleInputKeyDown} // ✅
+            onKeyDown={handleInputKeyDown}
           />
         </div>
 

@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import type { DeleteWorkerProps } from "@/interface/Interface"
+import { useKanban } from "../context/KanbanContext"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 
 const SKILL_LABELS: Record<string, string> = {
@@ -17,7 +17,8 @@ const SKILL_LABELS: Record<string, string> = {
   HVAC: "Konditsioner",
 }
 
-const DeleteWorker = ({ workers, onDelete }: DeleteWorkerProps) => {
+const DeleteWorker = () => {
+  const { technicians: workers, deleteTechnician: onDelete } = useKanban()
   const [open, setOpen] = useState(false)
 
   return (

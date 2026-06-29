@@ -24,19 +24,17 @@ import { supabase } from "@/lib/supaBase"
 const Register = () => {
   const navigate = useNavigate()
   const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
   })
 
   const onSubmit = async (data: RegisterFormValues) => {
     setError(null)
-    setLoading(true)
 
     const { error: signUpError } = await supabase.auth.signUp({
       email: data.email,
@@ -48,8 +46,6 @@ const Register = () => {
         },
       },
     })
-
-    setLoading(false)
 
     if (signUpError) {
       setError(getAuthErrorMessage(signUpError))
@@ -112,8 +108,12 @@ const Register = () => {
 
             {error && <p className="text-sm text-red-500">{error}</p>}
 
-            <Button type="submit" className="mt-2 w-full" disabled={loading}>
-              {loading ? "Loading..." : "Register"}
+            <Button
+              type="submit"
+              className="mt-2 w-full"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Loading..." : "Register"}
             </Button>
           </form>
         </CardContent>

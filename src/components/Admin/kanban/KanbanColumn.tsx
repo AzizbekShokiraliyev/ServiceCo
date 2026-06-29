@@ -3,18 +3,24 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { Lock } from "lucide-react"
 import { KanbanCard } from "./KanbanCard"
 import type { KanbanColumnProps } from "@/interface/Interface"
+import { useKanban } from "./context/KanbanContext"
 
 export const KanbanColumn = ({
   status,
-  deals,
   heightClass = "h-[280px]",
   widthClass = "w-52",
   emptyText = "Drop here",
   emptyVariant = "drop",
   subtitle,
   isDropDisabled = false,
-  onTimeChange,
 }: KanbanColumnProps) => {
+  const { deals, unassignedDeals } = useKanban()
+
+  const columnDeals =
+    status === "Works"
+      ? unassignedDeals
+      : deals.filter((d) => d.status === status)
+
   const { setNodeRef, isOver } = useDroppable({
     id: status,
     disabled: isDropDisabled,
@@ -32,7 +38,6 @@ export const KanbanColumn = ({
       ref={setNodeRef}
       className={`flex flex-shrink-0 flex-col rounded-xl border p-4 transition-all duration-200 ${heightClass} ${widthClass} ${borderBg}`}
     >
-      {/* Column header */}
       <div className="mb-4 px-1">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -45,7 +50,7 @@ export const KanbanColumn = ({
           </div>
 
           <span className="rounded-md border border-border/20 bg-background px-2 py-0.5 text-xs font-medium text-foreground/70 shadow-sm">
-            {deals.length}
+            {columnDeals.length}
           </span>
         </div>
 
@@ -56,24 +61,23 @@ export const KanbanColumn = ({
         )}
       </div>
 
-      {/* Cards */}
       <SortableContext
-        items={deals.map((d) => d.id)}
+        items={columnDeals.map((d) => d.id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="flex-1 scrollbar-thin space-y-3 overflow-y-auto p-0.5 select-none">
-          {deals.map((deal) => (
-            <KanbanCard key={deal.id} deal={deal} onTimeChange={onTimeChange} />
+          {columnDeals.map((deal) => (
+            <KanbanCard key={deal.id} deal={deal} editable />
           ))}
 
-          {deals.length === 0 &&
+          {columnDeals.length === 0 &&
             (emptyVariant === "drop" && !isDropDisabled ? (
               <div className="flex h-20 items-center justify-center rounded-lg border border-dashed border-border/60 bg-background/20 text-xs text-muted-foreground/50">
                 {emptyText}
               </div>
             ) : (
               <div className="flex h-20 items-center justify-center text-xs text-muted-foreground/40 italic">
-                {isDropDisabled ? "Faqat sudrab chiqing" : emptyText}
+                {isDropDisabled ? "Hammasi tayinlangan" : emptyText}
               </div>
             ))}
         </div>

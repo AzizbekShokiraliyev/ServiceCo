@@ -23,10 +23,12 @@ import {
   workerSchema,
   type WorkerFormValues,
 } from "@/components/shared/validation/worker.schema"
-import type { AddWorkerModalProps, Skill } from "@/interface/Interface"
+import { useKanban } from "../context/KanbanContext"
+import type { Skill } from "@/interface/Interface"
 
-export default function AddWorkerModal({ onAdd }: AddWorkerModalProps) {
+export default function AddWorkerModal() {
   const [open, setOpen] = useState(false)
+  const { createTechnician } = useKanban()
 
   const {
     register,
@@ -48,7 +50,7 @@ export default function AddWorkerModal({ onAdd }: AddWorkerModalProps) {
   }
 
   const onSubmit = (data: WorkerFormValues) => {
-    onAdd(data.fullName, data.skill as Skill)
+    createTechnician({ full_name: data.fullName, skill: data.skill as Skill })
     setOpen(false)
     reset()
   }

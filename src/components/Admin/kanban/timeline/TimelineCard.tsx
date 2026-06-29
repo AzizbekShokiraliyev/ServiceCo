@@ -1,6 +1,5 @@
 import { useDraggable } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
-import { User } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import type { KanbanDeal } from "@/interface/Interface"
 
@@ -11,7 +10,16 @@ interface TimelineCardProps {
 
 export const TimelineCard = ({ deal, isOverlay }: TimelineCardProps) => {
   const { setNodeRef, transform, attributes, listeners, isDragging } =
-    useDraggable({ id: deal.id })
+    useDraggable({
+      id: deal.id,
+    })
+
+  const initials = deal.client
+    .split(" ")
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase()
 
   return (
     <div
@@ -21,17 +29,18 @@ export const TimelineCard = ({ deal, isOverlay }: TimelineCardProps) => {
       {...listeners}
       className={`touch-none ${isDragging && !isOverlay ? "opacity-30" : ""}`}
     >
-      <Card className="flex cursor-grab flex-col gap-2 rounded-xl border border-border/50 bg-card p-3.5 shadow-sm transition-all duration-200 hover:border-border/80 hover:shadow-md active:cursor-grabbing">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
-          <span className="max-w-[120px] truncate font-semibold">
+      <Card className="hover:border-border-strong flex cursor-grab flex-col gap-1.5 rounded-[10px] border border-border p-3 shadow-none transition-[border-color,box-shadow] hover:shadow-sm active:cursor-grabbing">
+        <div className="flex items-center gap-2">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-accent/10 text-[9px] font-medium text-accent">
+            {initials}
+          </div>
+          <span className="max-w-[160px] truncate text-[11px] text-muted-foreground">
             {deal.client}
           </span>
         </div>
-
-        <h4 className="text-sm leading-snug font-semibold tracking-tight text-foreground/90">
+        <p className="text-[13px] leading-snug font-medium text-foreground">
           {deal.title}
-        </h4>
+        </p>
       </Card>
     </div>
   )

@@ -6,8 +6,10 @@ import { DealTimeDialog } from "./DealTimeDialog"
 import { getDealTimeStatus } from "@/lib/getDealTimeStatus"
 import { cn } from "@/lib/utils"
 import type { KanbanCardProps } from "@/interface/Interface"
+import { useKanban } from "./context/KanbanContext"
 
-export const KanbanCard = ({ deal, onTimeChange }: KanbanCardProps) => {
+export const KanbanCard = ({ deal, editable = false }: KanbanCardProps) => {
+  const { handleTimeChange } = useKanban()
   const {
     setNodeRef,
     transform,
@@ -42,11 +44,11 @@ export const KanbanCard = ({ deal, onTimeChange }: KanbanCardProps) => {
         </h4>
 
         {/* Time picker — only shown when column supports it */}
-        {onTimeChange && (
+        {editable && (
           <DealTimeDialog
             startTime={deal.startTime}
             endTime={deal.endTime}
-            onSave={(start, end) => onTimeChange(deal.id, start, end)}
+            onSave={(start, end) => handleTimeChange(deal.id, start, end)}
           />
         )}
       </Card>

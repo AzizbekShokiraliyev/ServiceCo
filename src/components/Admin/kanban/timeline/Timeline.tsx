@@ -1,5 +1,5 @@
 // src/components/Admin/kanban/timeline/Timeline.tsx
-import React, { useRef, useMemo } from "react"
+import React, { useRef } from "react"
 import { useDroppable } from "@dnd-kit/core"
 import {
   HOURS,
@@ -87,16 +87,13 @@ export const Timeline = ({
     if (nameScrollRef.current) nameScrollRef.current.scrollTop = el.scrollTop
   }
 
-  const rowData = useMemo(() => {
-    return rows.map((row) => {
-      const rowEvents = events.filter((e) => e.rowId === row.id)
-      const positioned = assignLanes(rowEvents)
-      const laneCount = positioned[0]?.laneCount ?? 1
-      const dynamicHeight = getRowHeight(laneCount)
-
-      return { row, positioned, dynamicHeight }
-    })
-  }, [rows, events])
+  const rowData = rows.map((row) => {
+    const rowEvents = events.filter((e) => e.rowId === row.id)
+    const positioned = assignLanes(rowEvents)
+    const laneCount = positioned[0]?.laneCount ?? 1
+    const dynamicHeight = getRowHeight(laneCount)
+    return { row, positioned, dynamicHeight }
+  })
 
   return (
     <div
