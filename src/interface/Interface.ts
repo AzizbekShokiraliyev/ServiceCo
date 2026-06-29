@@ -236,3 +236,8 @@ export interface TimelineBlockProps {
   onRemove?: (id: string) => void
   onRowChange?: (id: string, newRowId: string) => void
 }
+
+export interface TimelineCardProps {
+  deal: KanbanDeal
+  isOverlay?: boolean
+}

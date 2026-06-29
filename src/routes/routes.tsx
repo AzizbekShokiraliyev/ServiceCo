@@ -9,6 +9,7 @@ import User from "@/components/Users/User"
 import ProtectedRoute from "./ProtectedRoute"
 import MainLayout from "@/components/layout/MainLayout"
 import ClientInfo from "@/components/Workers/clientInfo/ClientInfo"
+import MastersPage from "@/components/Admin/Workers/MastersPage"
 
 export const router = createBrowserRouter([
   { path: "/", element: <AppLayout /> },
@@ -22,6 +23,7 @@ export const router = createBrowserRouter([
         children: [
           { path: "/dashboard", element: <Dashboard /> },
           { path: "/kanban", element: <Kanban /> },
+          { path: "/masters", element: <MastersPage /> },
         ],
       },
       // Technician

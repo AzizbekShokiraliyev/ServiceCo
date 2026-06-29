@@ -69,7 +69,6 @@ export const TimelineBlock = ({
         )}
       </div>
 
-      {/* Time */}
       {!readOnly && onMove ? (
         <TimelineTimeEditDialog
           event={event}

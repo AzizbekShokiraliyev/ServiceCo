@@ -1,4 +1,3 @@
-// src/hooks/useUserRole.ts
 import { useProfile } from "./useProfile"
 
 export function useUserRole() {

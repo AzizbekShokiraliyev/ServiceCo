@@ -79,6 +79,7 @@ export const Timeline = ({
   const bodyScrollRef = useRef<HTMLDivElement>(null)
   const headerScrollRef = useRef<HTMLDivElement>(null)
   const nameScrollRef = useRef<HTMLDivElement>(null)
+  //maqsad sinxron scrol qilish
 
   const onBodyScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget
@@ -87,6 +88,7 @@ export const Timeline = ({
     if (nameScrollRef.current) nameScrollRef.current.scrollTop = el.scrollTop
   }
 
+  // hisob kitob har bir qator uchun
   const rowData = rows.map((row) => {
     const rowEvents = events.filter((e) => e.rowId === row.id)
     const positioned = assignLanes(rowEvents)

@@ -98,18 +98,24 @@ export const TimelineTimeEditDialog = ({
 
         {onRowChange && rows.length > 0 && (
           <div className="space-y-1.5">
-            <Label className="text-[11px]">Ishchi</Label>
+            <Label>
+              <div className="text-[11px]">Ishchi</div>
+            </Label>
             <Select value={rowId} onValueChange={setRowId}>
-              <SelectTrigger className="h-8 text-xs">
-                <SelectValue placeholder="Tanlang" />
-              </SelectTrigger>
-              <SelectContent>
-                {rows.map((row) => (
-                  <SelectItem key={row.id} value={row.id} className="text-xs">
-                    {row.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
+              <div className="h-8 w-full text-xs">
+                <SelectTrigger>
+                  <SelectValue placeholder="Tanlang" />
+                </SelectTrigger>
+              </div>
+              <div className="w-full">
+                <SelectContent>
+                  {rows.map((row) => (
+                    <SelectItem key={row.id} value={row.id} className="text-xs">
+                      {row.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </div>
             </Select>
           </div>
         )}

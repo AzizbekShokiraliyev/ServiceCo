@@ -131,7 +131,6 @@ function KanbanContent() {
         </DragOverlay>
       </DndContext>
 
-      {/* --- Vaqt Tayinlash Modali --- */}
       <AssignTimeModal />
     </div>
   )

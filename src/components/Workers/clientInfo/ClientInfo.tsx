@@ -15,8 +15,6 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-
-// ✅ O'zimiz yaratgan universal ConfirmDialog importi
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 
 import { useQueryClient } from "@tanstack/react-query"
@@ -73,6 +71,7 @@ export default function ClientInfo() {
             queryClient.invalidateQueries({ queryKey: ["job", id] })
             queryClient.invalidateQueries({ queryKey: ["jobs"] })
           },
+          //setQueryData
         }
       )
     }

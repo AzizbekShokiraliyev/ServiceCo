@@ -66,7 +66,6 @@ export const TimelineView = () => {
 
   return (
     <div className={`flex ${LAYOUT.BOARD_HEIGHT} gap-4`}>
-      {/* Unassigned panel — KanbanColumn bilan bir xil stil */}
       <div
         className={`flex ${LAYOUT.UNASSIGNED_WIDTH} shrink-0 flex-col rounded-xl border border-border/40 bg-muted/30 p-4`}
       >
@@ -94,7 +93,6 @@ export const TimelineView = () => {
         </div>
       </div>
 
-      {/* Timeline */}
       <div className="relative min-w-0 flex-1">
         <Timeline
           rows={rows}

@@ -1,12 +1,7 @@
 import { useDraggable } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { Card } from "@/components/ui/card"
-import type { KanbanDeal } from "@/interface/Interface"
-
-interface TimelineCardProps {
-  deal: KanbanDeal
-  isOverlay?: boolean
-}
+import type { TimelineCardProps } from "@/interface/Interface"
 
 export const TimelineCard = ({ deal, isOverlay }: TimelineCardProps) => {
   const { setNodeRef, transform, attributes, listeners, isDragging } =

@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronRight,
   User,
+  Users,
 } from "lucide-react"
 import { NavLink, useNavigate } from "react-router-dom"
 import { Button } from "../ui/button"
@@ -23,6 +24,7 @@ import { useQueryClient } from "@tanstack/react-query"
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Kanban", path: "/kanban", icon: KanbanSquare },
+  { label: "Masters", path: "/masters", icon: Users },
   { label: "Ishlarim", path: "/workers", icon: User },
   { label: "Buyurtmalarim", path: "/profile", icon: User },
 ]
@@ -45,7 +47,11 @@ const Sidebar = () => {
 
   const filteredItems = navItems.filter((item) => {
     if (role === "admin") {
-      return item.path === "/dashboard" || item.path === "/kanban"
+      return (
+        item.path === "/dashboard" ||
+        item.path === "/kanban" ||
+        item.path === "/masters"
+      )
     }
     if (role === "technician") {
       return item.path === "/workers"
