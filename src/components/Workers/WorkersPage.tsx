@@ -1,72 +1,42 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  Zap,
-  Droplets,
-  Wrench,
-  LayoutList,
-  CalendarDays,
-  Briefcase,
-  CheckCircle,
-} from "lucide-react"
+import { LayoutList, CalendarDays, Briefcase, CheckCircle } from "lucide-react"
+
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+
 import WorkersHeader from "./WorkersHeader"
-import { StatCard } from "@/components/shared/StatCard"
 import { ListContainer } from "@/components/shared/ListContainer"
 import { InfoListItem } from "@/components/shared/InfoListItem"
 import {
   Timeline,
   type TimelineRow,
   type TimelineEvent,
-} from "@/components/shared/timeLine/Timeline"
+} from "@/components/Admin/kanban/timeline/Timeline"
+
 import { useProfile } from "@/hooks/useProfile"
 import { useJobsByTechnician } from "@/hooks/useJobs"
 import { useTechnicians } from "@/hooks/useTechnicians"
-import type { JobType } from "@/interface/Interface"
+import { JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 
 type ViewMode = "list" | "timeline"
-
-const JOB_TYPE_CONFIG: Record<
-  JobType,
-  { icon: React.ElementType; iconColor: string; iconBg: string }
-> = {
-  electrical: {
-    icon: Zap,
-    iconColor: "text-amber-500",
-    iconBg: "bg-amber-500/10",
-  },
-  plumbing: {
-    icon: Droplets,
-    iconColor: "text-blue-500",
-    iconBg: "bg-blue-500/10",
-  },
-  hvac: {
-    icon: Wrench,
-    iconColor: "text-emerald-500",
-    iconBg: "bg-emerald-500/10",
-  },
-}
 
 export default function WorkersPage() {
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState<ViewMode>("list")
 
-  // ✅ Login bo'lgan userning profili
   const { data: profile, isLoading: profileLoading } = useProfile()
-
-  // ✅ Profilga tegishli texnikni topish
   const { data: techniciansData = [] } = useTechnicians()
+
   const myTechnician = techniciansData.find((t) => t.profile_id === profile?.id)
 
-  // ✅ Texnikning ishlari
-  const { data: jobs = [], isLoading: jobsLoading } = useJobsByTechnician(
+  const { data: jobGroups, isLoading: jobsLoading } = useJobsByTechnician(
     myTechnician?.id
   )
+  const completedJobs = jobGroups?.completed ?? []
+  const remainingJobs = jobGroups?.remaining ?? []
 
-  const completedJobs = jobs.filter((j) => j.status === "completed")
-  const remainingJobs = jobs.filter((j) => j.status !== "completed")
-
-  // Timeline uchun
   const workerRow: TimelineRow[] = myTechnician
     ? [
         {
@@ -78,7 +48,7 @@ export default function WorkersPage() {
       ]
     : []
 
-  const workerEvents: TimelineEvent[] = jobs
+  const workerEvents: TimelineEvent[] = remainingJobs
     .filter((j) => j.scheduled_start && j.scheduled_end)
     .map((j) => ({
       id: j.id,
@@ -91,8 +61,29 @@ export default function WorkersPage() {
 
   if (profileLoading || jobsLoading) {
     return (
-      <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
-        Yuklanmoqda...
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-[240px]" />
+          <Skeleton className="h-4 w-[140px]" />
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <Skeleton className="h-28 w-full rounded-xl" />
+          <Skeleton className="h-28 w-full rounded-xl" />
+        </div>
+
+        <div className="space-y-4 rounded-xl border border-border/50 p-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-[180px]" />
+              <Skeleton className="h-4 w-[280px]" />
+            </div>
+            <Skeleton className="h-9 w-[160px] rounded-lg" />
+          </div>
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <Skeleton className="h-16 w-full rounded-lg" />
+          <Skeleton className="h-16 w-full rounded-lg" />
+        </div>
       </div>
     )
   }
@@ -105,29 +96,50 @@ export default function WorkersPage() {
       />
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <StatCard
-          title="Bugungi ishlar"
-          value={jobs.length}
-          subtext={new Date().toLocaleDateString("uz-UZ", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-          icon={Briefcase}
-        />
-        <StatCard
-          title="Bajarilganlar"
-          value={completedJobs.length}
-          subtext={`${remainingJobs.length} ta qoldi`}
-          icon={CheckCircle}
-          valueColor="text-emerald-500"
-          iconColor="text-emerald-500"
-        />
+        {/* Bugungi ishlar kartasi */}
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Bugungi ishlar
+            </CardTitle>
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold tracking-tight">
+              {remainingJobs.length}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {new Date().toLocaleDateString("uz-UZ", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </CardContent>
+        </Card>
+
+        {/* Bajarilgan ishlar kartasi */}
+        <Card className="shadow-sm">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Bajarilganlar
+            </CardTitle>
+            <CheckCircle className="h-4 w-4 text-emerald-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold tracking-tight text-emerald-500">
+              {completedJobs.length}
+            </div>
+            <p className="mt-1 text-xs font-medium text-emerald-500">
+              {remainingJobs.length} ta bajariladigan ish qoldi
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <ListContainer
         title="Bugungi jadval"
-        description="Sizga tayinlangan ishlar"
+        description="Sizga tayinlangan faol ishlar"
         headerAction={
           <Tabs
             value={viewMode}
@@ -144,13 +156,17 @@ export default function WorkersPage() {
           </Tabs>
         }
       >
-        {jobs.length === 0 ? (
+        {remainingJobs.length === 0 ? (
           <div className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
-            Bugun sizga tayinlangan ish yo'q.
+            Barcha ishlar bajarilgan yoki tayinlangan ish yo'q.
           </div>
         ) : viewMode === "list" ? (
-          jobs.map((job) => {
-            const config = JOB_TYPE_CONFIG[job.job_type ?? "electrical"]
+          remainingJobs.map((job) => {
+            const config = JOB_TYPE_CONFIG[job.job_type ?? "electrical"] || {
+              icon: Briefcase,
+              bg: "bg-muted",
+              text: "text-foreground",
+            }
             const time =
               job.scheduled_start && job.scheduled_end
                 ? `${job.scheduled_start} - ${job.scheduled_end}`
@@ -160,8 +176,8 @@ export default function WorkersPage() {
               <InfoListItem
                 key={job.id}
                 icon={config.icon}
-                iconBg={config.iconBg}
-                iconColor={config.iconColor}
+                iconBg={config.bg}
+                iconColor={config.text}
                 title={job.title}
                 duration={time}
                 onClick={() => navigate(`/workers/client/${job.id}`)}

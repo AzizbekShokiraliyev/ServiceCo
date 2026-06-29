@@ -33,18 +33,3 @@ const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
 }
 
 export default ProtectedRoute
-
-export const RootRedirect = () => {
-  const { role, loading } = useUserRole()
-
-  if (loading) return null
-  if (!role) return <Navigate to="/login" replace />
-
-  const paths: Record<string, string> = {
-    admin: "/dashboard",
-    technician: "/workers",
-    customer: "/profile",
-  }
-
-  return <Navigate to={paths[role] || "/login"} replace />
-}

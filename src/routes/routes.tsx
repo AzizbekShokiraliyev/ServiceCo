@@ -5,10 +5,10 @@ import Register from "@/components/auth/Register"
 import Dashboard from "@/components/Admin/dashboard/Dashboard"
 import Kanban from "@/components/Admin/kanban/Kanban"
 import WorkersPage from "@/components/Workers/WorkersPage"
-import ClientInfo from "@/components/Workers/clinetInfo/ClientInfo"
 import User from "@/components/Users/User"
 import ProtectedRoute from "./ProtectedRoute"
 import MainLayout from "@/components/layout/MainLayout"
+import ClientInfo from "@/components/Workers/clientInfo/ClientInfo"
 
 export const router = createBrowserRouter([
   { path: "/", element: <AppLayout /> },
@@ -17,7 +17,6 @@ export const router = createBrowserRouter([
   {
     element: <MainLayout />,
     children: [
-      // Admin
       {
         element: <ProtectedRoute allowedRoles={["admin"]} />,
         children: [
@@ -42,4 +41,3 @@ export const router = createBrowserRouter([
   },
   { path: "*", element: <Navigate to="/login" replace /> },
 ])
-

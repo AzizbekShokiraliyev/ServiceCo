@@ -1,13 +1,12 @@
+import type { LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
 import type React from "react"
 
-// ============ ENUMS / TYPES ============
 export type ProfileRole = "admin" | "technician" | "customer"
 export type Skill = "Electrical" | "Plumbing" | "HVAC"
 export type JobType = "electrical" | "plumbing" | "hvac"
-export type JobStatus = "on_way" | "in_progress" | "completed"
 
-// ============ SUPABASE TABLES ============
+export type JobStatus = "pending" | "on_way" | "in_progress" | "completed"
 
 export interface Profile {
   id: string
@@ -42,8 +41,6 @@ export interface Job {
   updated_at: string
 }
 
-// ============ JOINED TYPES ============
-
 export interface JobWithTechnician extends Job {
   technician: Pick<Technician, "id" | "full_name" | "skill"> | null
 }
@@ -51,8 +48,6 @@ export interface JobWithTechnician extends Job {
 export interface TechnicianWithProfile extends Technician {
   profile: Pick<Profile, "id" | "full_name" | "phone"> | null
 }
-
-// ============ KANBAN ============
 
 export interface KanbanDeal {
   id: string
@@ -81,13 +76,11 @@ export interface KanbanColumnProps {
   onDelete?: () => void
 }
 
-// ============ SHARED COMPONENTS ============
-
 export interface StatCardProps {
   title: string
   value: number | string
   subtext?: string
-  icon: ReactNode
+  icon: ReactNode 
   iconColor?: string
   valueColor?: string
 }
@@ -98,6 +91,7 @@ export interface ConfirmDialogProps {
   description: string
   confirmLabel?: string
   cancelLabel?: string
+  variant?: "default" | "destructive"
   onConfirm: () => void
 }
 
@@ -123,4 +117,125 @@ export interface DataTableProps<T extends { id: string | number }> {
 
 export interface AboutUsDialogProps {
   children: React.ReactNode
+}
+
+export interface TimelineRow {
+  id: string
+  label: string
+  sublabel?: string
+  avatarChar?: string
+}
+ 
+export interface TimelineEvent {
+  id: string
+  rowId: string
+  title: string
+  subtitle?: string
+  startTime: string
+  endTime: string
+}
+
+export interface TimelineViewProps {
+  technicians: Technician[]
+  deals: KanbanDeal[]
+  unassigned: KanbanDeal[]
+  onRemoveFromTimeline: (id: string) => void
+  onTimeMove: (id: string, startTime: string, endTime: string) => void
+  onRowChange: (id: string, newRowId: string) => void
+}
+
+export interface AddWorkerModalProps {
+  onAdd: (name: string, skill: Skill) => void
+}
+
+export interface DeleteWorkerProps {
+  workers: Technician[]
+  onDelete: (id: string) => void
+}
+
+export interface PositionedEvent extends TimelineEvent {
+  laneIndex: number
+  laneCount: number
+}
+
+export interface TimelineProps {
+  rows: TimelineRow[]
+  events: TimelineEvent[]
+  height?: string
+  readOnly?: boolean
+  onEventMove?: (id: string, startTime: string, endTime: string) => void
+  onEventRemove?: (id: string) => void
+  onEventRowChange?: (id: string, newRowId: string) => void
+}
+
+export interface TimelineGridRowProps {
+  row: TimelineRow
+  rows: TimelineRow[]
+  positionedEvents: PositionedEvent[]
+  dynamicHeight: number
+  readOnly?: boolean
+  onEventMove?: (id: string, startTime: string, endTime: string) => void
+  onEventRemove?: (id: string) => void
+  onEventRowChange?: (id: string, newRowId: string) => void
+}
+
+// export interface DealCardProps {
+//   deal: KanbanDeal
+//   isDragging?: boolean
+// }
+
+export interface InfoListItemProps {
+  icon: React.ElementType
+  iconBg?: string
+  iconColor?: string
+  title: string
+  subtitle?: React.ReactNode
+  duration?: string
+  statusLabel?: string
+  statusClassName?: string
+  onClick?: () => void 
+}
+
+export interface ListContainerProps {
+  title: string
+  description?: string
+  headerAction?: React.ReactNode
+  children: React.ReactNode
+  footer?: React.ReactNode
+  className?: string 
+}
+
+export interface TabOption {
+  value: string
+  label: string
+}
+
+export interface SearchBarProps {
+  tabs?: TabOption[]
+  activeTab?: string
+  onTabChange?: (value: string) => void
+  searchQuery: string
+  onSearchChange: (value: string) => void
+  searchPlaceholder?: string
+}
+
+export interface SharedStatCardProps {
+  title: string
+  value: number | string
+  subtext?: string
+  icon: LucideIcon
+  iconColor?: string
+  valueColor?: string
+}
+
+export interface JobStatusConfig {
+  label: string
+  className: string
+}
+
+export interface JobTypeConfig {
+  label: string
+  icon: LucideIcon
+  bg: string
+  text: string
 }

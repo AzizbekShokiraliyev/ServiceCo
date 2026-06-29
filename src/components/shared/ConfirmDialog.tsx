@@ -1,3 +1,4 @@
+// @/components/shared/ConfirmDialog.tsx
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -15,8 +16,9 @@ export function ConfirmDialog({
   trigger,
   title,
   description,
-  confirmLabel = "O'chirish",
+  confirmLabel = "Tasdiqlash",
   cancelLabel = "Bekor qilish",
+  variant = "default",
   onConfirm,
 }: ConfirmDialogProps) {
   return (
@@ -32,7 +34,11 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
           <AlertDialogAction
-            className="text-destructive-foreground bg-destructive hover:bg-destructive/90"
+            className={
+              variant === "destructive"
+                ? "text-destructive-foreground bg-destructive hover:bg-destructive/90"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            }
             onClick={onConfirm}
           >
             {confirmLabel}

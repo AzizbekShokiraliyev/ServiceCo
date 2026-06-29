@@ -23,11 +23,7 @@ import {
   workerSchema,
   type WorkerFormValues,
 } from "@/components/shared/validation/worker.schema"
-import type { Skill } from "@/interface/Interface"
-
-interface AddWorkerModalProps {
-  onAdd: (name: string, skill: Skill) => void
-}
+import type { AddWorkerModalProps, Skill } from "@/interface/Interface"
 
 export default function AddWorkerModal({ onAdd }: AddWorkerModalProps) {
   const [open, setOpen] = useState(false)

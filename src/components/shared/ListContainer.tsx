@@ -6,15 +6,7 @@ import {
   CardTitle,
   CardFooter,
 } from "@/components/ui/card"
-
-interface ListContainerProps {
-  title: string
-  description?: string
-  headerAction?: React.ReactNode
-  children: React.ReactNode
-  footer?: React.ReactNode
-  className?: string // <-- 1. Allow passing custom classes like height
-}
+import type { ListContainerProps } from "@/interface/Interface"
 
 export function ListContainer({
   title,

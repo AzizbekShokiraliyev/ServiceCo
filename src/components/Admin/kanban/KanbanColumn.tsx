@@ -7,8 +7,8 @@ import type { KanbanColumnProps } from "@/interface/Interface"
 export const KanbanColumn = ({
   status,
   deals,
-  heightClass = "h-[calc(100vh-220px)]",
-  widthClass = "w-80",
+  heightClass = "h-[280px]",
+  widthClass = "w-52",
   emptyText = "Drop here",
   emptyVariant = "drop",
   subtitle,
@@ -20,19 +20,21 @@ export const KanbanColumn = ({
     disabled: isDropDisabled,
   })
 
+  const borderBg =
+    isOver && !isDropDisabled
+      ? "border-primary/60 bg-accent/40 shadow-sm"
+      : isDropDisabled
+        ? "border-muted-foreground/10 bg-muted/20 opacity-90"
+        : "border-border/40 bg-muted/30"
+
   return (
     <div
       ref={setNodeRef}
-      className={`flex ${heightClass} ${widthClass} flex-shrink-0 flex-col rounded-xl border p-4 transition-all duration-200 ${
-        isOver && !isDropDisabled
-          ? "border-primary/60 bg-accent/40 shadow-sm"
-          : isDropDisabled
-            ? "border-muted-foreground/10 bg-muted/20 opacity-90"
-            : "border-border/40 bg-muted/30"
-      }`}
+      className={`flex flex-shrink-0 flex-col rounded-xl border p-4 transition-all duration-200 ${heightClass} ${widthClass} ${borderBg}`}
     >
+      {/* Column header */}
       <div className="mb-4 px-1">
-        <div className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <h3 className="text-xs font-bold tracking-wider text-foreground/80 uppercase">
               {status}
@@ -42,11 +44,9 @@ export const KanbanColumn = ({
             )}
           </div>
 
-          <div className="flex items-center gap-1">
-            <span className="rounded-md border border-border/20 bg-background px-2 py-0.5 text-xs font-medium text-foreground/70 shadow-sm">
-              {deals.length}
-            </span>
-          </div>
+          <span className="rounded-md border border-border/20 bg-background px-2 py-0.5 text-xs font-medium text-foreground/70 shadow-sm">
+            {deals.length}
+          </span>
         </div>
 
         {subtitle && (
@@ -56,6 +56,7 @@ export const KanbanColumn = ({
         )}
       </div>
 
+      {/* Cards */}
       <SortableContext
         items={deals.map((d) => d.id)}
         strategy={verticalListSortingStrategy}

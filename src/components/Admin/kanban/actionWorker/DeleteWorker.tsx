@@ -8,18 +8,13 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import type { Technician } from "@/interface/Interface"
-import { ConfirmDialog } from "./ConfirmDialogProps "
+import type { DeleteWorkerProps } from "@/interface/Interface"
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 
 const SKILL_LABELS: Record<string, string> = {
   Electrical: "Elektrik",
   Plumbing: "Santexnik",
   HVAC: "Konditsioner",
-}
-
-interface DeleteWorkerProps {
-  workers: Technician[]
-  onDelete: (id: string) => void
 }
 
 const DeleteWorker = ({ workers, onDelete }: DeleteWorkerProps) => {

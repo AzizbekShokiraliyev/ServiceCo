@@ -1,127 +1,131 @@
-import { StatCard } from "@/components/shared/StatCard"
-import { ListContainer } from "@/components/shared/ListContainer"
-import { InfoListItem } from "@/components/shared/InfoListItem"
-import {
-  Users,
-  ClipboardList,
-  AlertCircle,
-  Wind,
-  Droplet,
-  Zap,
-  MapPin,
-} from "lucide-react"
+"use client"
+
+import { AlertCircle, MapPin } from "lucide-react"
 import UserModal from "./UserModal"
 import { useJobs } from "@/hooks/useJobs"
 import { useProfile } from "@/hooks/useProfile"
-import type { JobType, JobStatus } from "@/interface/Interface"
+import { JOB_STATUS_CONFIG, JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 
-const catConfig: Record<
-  JobType,
-  { icon: React.ElementType; bg: string; text: string }
-> = {
-  hvac: { icon: Wind, bg: "bg-orange-500/10", text: "text-orange-500" },
-  plumbing: { icon: Droplet, bg: "bg-cyan-500/10", text: "text-cyan-500" },
-  electrical: { icon: Zap, bg: "bg-yellow-500/10", text: "text-yellow-500" },
-}
-
-const statConfig: Record<JobStatus, { label: string; className: string }> = {
-  on_way: {
-    label: "Yo'lda",
-    className: "text-muted-foreground border-border/60",
-  },
-  in_progress: {
-    label: "Jarayonda",
-    className: "text-blue-400 border-blue-500/30",
-  },
-  completed: {
-    label: "Bajarildi",
-    className: "text-emerald-400 border-emerald-500/30",
-  },
-}
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
+import { ScrollArea } from "@/components/ui/scroll-area"
 
 export default function User() {
   const { data: profile } = useProfile()
-
-  // ✅ Faqat shu user yaratgan joblarni olish
   const { data: jobs = [], isLoading } = useJobs()
+
   const myJobs = jobs.filter((j) => j.created_by === profile?.id)
 
-  const open = myJobs.filter((j) => j.status !== "completed").length
-  const resolved = myJobs.filter((j) => j.status === "completed").length
+  const openJobs = myJobs.filter((j) => j.status !== "completed")
 
   return (
-    <div className="space-y-8">
+    <div className="flex h-full flex-col space-y-6 p-1">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <div className="text-3xl font-bold tracking-tight">
+          <h1 className="text-3xl font-bold tracking-tight">
             Mening buyurtmalarim
-          </div>
-          <div className="mt-1 text-muted-foreground">
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Yuborilgan muammolaringiz va ularning holati
-          </div>
+          </p>
         </div>
         <UserModal />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard
-          title="Jami muammolar"
-          value={myJobs.length}
-          icon={ClipboardList}
-          iconColor="text-blue-500"
-        />
-        <StatCard
-          title="Ochiq"
-          value={open}
-          icon={AlertCircle}
-          iconColor="text-amber-500"
-        />
-        <StatCard
-          title="Yechilgan"
-          value={resolved}
-          icon={Users}
-          iconColor="text-emerald-500"
-        />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Faol murojaatlar</CardTitle>
+            <CardDescription>
+              Sizning yuborgan ochiq so'rovlaringiz
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="flex-1 p-0">
+            <ScrollArea className="h-[calc(100vh-280px)] px-6 pb-6">
+              <div className="space-y-3">
+                {isLoading ? (
+                  Array.from({ length: 3 }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between rounded-xl border p-4"
+                    >
+                      <div className="flex items-center space-x-4">
+                        <Skeleton className="h-10 w-10 rounded-lg" />
+                        <div className="space-y-2">
+                          <Skeleton className="h-4 w-[200px]" />
+                          <Skeleton className="h-3 w-[150px]" />
+                        </div>
+                      </div>
+                      <Skeleton className="h-6 w-[80px] rounded-full" />
+                    </div>
+                  ))
+                ) : openJobs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
+                    <AlertCircle className="h-10 w-10 text-muted-foreground/60" />
+                    <p className="mt-4 text-sm font-medium text-muted-foreground">
+                      Hozircha ochiq buyurtmalar yo'q.
+                    </p>
+                  </div>
+                ) : (
+                  openJobs.map((job) => {
+                    const category =
+                      JOB_TYPE_CONFIG[job.job_type ?? "electrical"]
+                    const status = JOB_STATUS_CONFIG[job.status]
+                    const IconComponent = category?.icon || AlertCircle
+
+                    return (
+                      <div
+                        key={job.id}
+                        className="group flex flex-col justify-between gap-4 rounded-xl border bg-card p-4 transition-all hover:bg-accent/40 sm:flex-row sm:items-center"
+                      >
+                        <div className="flex items-start gap-4 sm:items-center">
+                          <div
+                            className={`rounded-xl p-2.5 ${category?.bg || "bg-muted"}`}
+                          >
+                            <IconComponent
+                              className={`h-5 w-5 ${category?.text || "text-foreground"}`}
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <h4 className="leading-none font-semibold tracking-tight transition-colors group-hover:text-primary">
+                              {job.title}
+                            </h4>
+                            {job.address && (
+                              <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                                <MapPin className="h-3 w-3 shrink-0" />
+                                <span className="max-w-[250px] truncate sm:max-w-[400px]">
+                                  {job.address}
+                                </span>
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex sm:justify-end">
+                          <Badge
+                            variant="secondary"
+                            className={`rounded-full border px-3 py-1 text-xs font-medium shadow-none ${status?.className || ""}`}
+                          >
+                            {status?.label || job.status}
+                          </Badge>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
-
-      <ListContainer
-        title="So'nggi murojaatlar"
-        description="Barcha yuborilgan so'rovlaringiz tarixi"
-      >
-        {isLoading ? (
-          <div className="animate-pulse py-10 text-center text-sm text-muted-foreground">
-            Yuklanmoqda...
-          </div>
-        ) : myJobs.length === 0 ? (
-          <div className="rounded-xl border border-dashed py-12 text-center text-sm text-muted-foreground">
-            Hozircha buyurtmalar yo'q.
-          </div>
-        ) : (
-          myJobs.map((job) => {
-            const category = catConfig[job.job_type ?? "electrical"]
-            const status = statConfig[job.status]
-
-            return (
-              <InfoListItem
-                key={job.id}
-                icon={category.icon}
-                iconBg={category.bg}
-                iconColor={category.text}
-                title={job.title}
-                statusLabel={status.label}
-                statusClassName={status.className}
-                subtitle={
-                  job.address ? (
-                    <span className="flex items-center gap-1.5">
-                      <MapPin className="h-3 w-3" /> {job.address}
-                    </span>
-                  ) : undefined
-                }
-              />
-            )
-          })
-        )}
-      </ListContainer>
     </div>
   )
 }

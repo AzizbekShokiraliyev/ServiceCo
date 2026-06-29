@@ -1,16 +1,5 @@
+import type { InfoListItemProps } from "@/interface/Interface"
 import { Clock } from "lucide-react"
-
-interface InfoListItemProps {
-  icon: React.ElementType
-  iconBg?: string
-  iconColor?: string
-  title: string
-  subtitle?: React.ReactNode
-  duration?: string
-  statusLabel?: string
-  statusClassName?: string
-  onClick?: () => void // <-- Added for navigation
-}
 
 export function InfoListItem({
   icon: Icon,

@@ -39,6 +39,5 @@ const PasswordField = forwardRef<
     </FieldGroup>
   )
 })
-PasswordField.displayName = "PasswordField"
 
 export default PasswordField

@@ -1,4 +1,5 @@
-import { useState } from "react"
+"use client"
+
 import { useNavigate, useParams } from "react-router-dom"
 import { ArrowLeft, Phone, MapPin, Clock, Car, Cog, Check } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -14,16 +15,11 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "@/components/ui/alert-dialog"
+
+// ✅ O'zimiz yaratgan universal ConfirmDialog importi
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
+
+import { useQueryClient } from "@tanstack/react-query"
 import { useJobById, useJobStatusUpdate } from "@/hooks/useJobs"
 import type { JobStatus } from "@/interface/Interface"
 
@@ -50,6 +46,7 @@ function InfoCard({
 }
 
 const STATUS_LABELS: Record<string, string> = {
+  pending: "Kutilmoqda",
   on_way: "Yo'lda",
   in_progress: "Jarayonda",
   completed: "Tugagan",
@@ -58,18 +55,25 @@ const STATUS_LABELS: Record<string, string> = {
 export default function ClientInfo() {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
-  const [confirmOpen, setConfirmOpen] = useState(false)
+  const queryClient = useQueryClient()
 
-  // ✅ Supabase dan job ni olish
   const { data: job, isLoading } = useJobById(id)
   const { mutate: updateStatus } = useJobStatusUpdate()
 
   const handleStatusChange = (value: string) => {
     if (!value || !id) return
-    if (value === "completed") {
-      setConfirmOpen(true)
-    } else {
-      updateStatus({ id, status: value as JobStatus })
+
+    // completed holatidan tashqari barcha holatlarni to'g'ridan-to'g'ri o'zgartiramiz
+    if (value !== "completed") {
+      updateStatus(
+        { id, status: value as JobStatus },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["job", id] })
+            queryClient.invalidateQueries({ queryKey: ["jobs"] })
+          },
+        }
+      )
     }
   }
 
@@ -103,6 +107,7 @@ export default function ClientInfo() {
         </Button>
       </div>
 
+      {/* Mijoz kartochkasi */}
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
@@ -127,6 +132,7 @@ export default function ClientInfo() {
         </CardHeader>
       </Card>
 
+      {/* Ma'lumotlar paneli */}
       <div className="grid gap-4 md:grid-cols-3">
         <InfoCard
           icon={Phone}
@@ -137,6 +143,7 @@ export default function ClientInfo() {
         <InfoCard icon={Clock} label="Vaqt" value={time} />
       </div>
 
+      {/* Ish holatini boshqarish paneli */}
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-1">
@@ -153,44 +160,60 @@ export default function ClientInfo() {
               onValueChange={handleStatusChange}
               className="grid grid-cols-1 gap-3 md:grid-cols-3"
             >
-              <ToggleGroupItem value="on_way" className="h-12">
+              <ToggleGroupItem
+                value="on_way"
+                className="h-12"
+                disabled={job.status === "completed"}
+              >
                 <Car className="mr-2 h-4 w-4" /> Yo'ldaman
               </ToggleGroupItem>
-              <ToggleGroupItem value="in_progress" className="h-12">
+
+              <ToggleGroupItem
+                value="in_progress"
+                className="h-12"
+                disabled={job.status === "completed"}
+              >
                 <Cog className="mr-2 h-4 w-4" /> Boshladim
               </ToggleGroupItem>
-              <ToggleGroupItem value="completed" className="h-12">
-                <Check className="mr-2 h-4 w-4" /> Tugatdim
-              </ToggleGroupItem>
+
+              {/* ✅ COMPLETED TUGMASINI CONFIRM_DIALOG BILAN O'RAB CHIQDIK */}
+              {job.status === "completed" ? (
+                <ToggleGroupItem value="completed" className="h-12" disabled>
+                  <Check className="mr-2 h-4 w-4" /> Tugatilgan
+                </ToggleGroupItem>
+              ) : (
+                <ConfirmDialog
+                  variant="default"
+                  title="Ishni tugatishni tasdiqlaysizmi?"
+                  description="Bu amalni qaytarib bo'lmaydi. Vazifa bajarilganlar qatoriga o'tkaziladi."
+                  confirmLabel="Ha, tugatdim"
+                  cancelLabel="Bekor qilish"
+                  trigger={
+                    <ToggleGroupItem
+                      value="completed"
+                      className="h-12 data-[state=on]:bg-transparent"
+                    >
+                      <Check className="mr-2 h-4 w-4" /> Tugatdim
+                    </ToggleGroupItem>
+                  }
+                  onConfirm={() => {
+                    if (!id) return
+                    updateStatus(
+                      { id, status: "completed" },
+                      {
+                        onSuccess: () => {
+                          queryClient.invalidateQueries({ queryKey: ["jobs"] })
+                          navigate(-1)
+                        },
+                      }
+                    )
+                  }}
+                />
+              )}
             </ToggleGroup>
           </div>
         </CardContent>
       </Card>
-
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              Ishni tugatishni tasdiqlaysizmi?
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Bu amalni qaytarib bo'lmaydi. Vazifa bajarilganlar qatoriga
-              o'tkaziladi.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Bekor qilish</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                updateStatus({ id: job.id, status: "completed" })
-                setConfirmOpen(false)
-              }}
-            >
-              Ha, tugatdim
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   )
 }

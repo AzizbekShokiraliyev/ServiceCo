@@ -2,6 +2,7 @@ import { Outlet } from "react-router-dom"
 import Sidebar from "./Sidebar"
 import Header from "./Header"
 import { SidebarProvider } from "../ui/sidebar"
+import { Toaster } from "sonner"
 
 const MainLayout = () => {
   return (
@@ -15,6 +16,8 @@ const MainLayout = () => {
           </main>
         </div>
       </div>
+
+      <Toaster richColors position="top-right" />
     </SidebarProvider>
   )
 }

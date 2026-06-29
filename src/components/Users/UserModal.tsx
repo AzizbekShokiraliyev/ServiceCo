@@ -18,6 +18,7 @@ import {
 } from "../shared/validation/user.schema"
 import { useJobCreate } from "@/hooks/useJobs"
 import { useProfile } from "@/hooks/useProfile"
+import { toast } from "sonner"
 
 export default function UserModal() {
   const [open, setOpen] = useState(false)
@@ -46,7 +47,7 @@ export default function UserModal() {
         client_phone: data.phone ?? null,
         address: data.location,
         job_type: null,
-        status: "on_way",
+        status: "pending",
         technician_id: null,
         scheduled_start: null,
         scheduled_end: null,
@@ -56,6 +57,10 @@ export default function UserModal() {
         onSuccess: () => {
           setOpen(false)
           reset()
+        },
+        onError: (error) => {
+          console.error("Job yaratishda xato:", error)
+          toast(`Xatolik: ${error.message}`)
         },
       }
     )
@@ -85,6 +90,19 @@ export default function UserModal() {
             />
             {errors.fullName && (
               <p className="text-xs text-red-500">{errors.fullName.message}</p>
+            )}
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="phone">Telefon raqami</Label>
+            <Input
+              id="phone"
+              type="tel"
+              placeholder="+998 90 123 45 67"
+              {...register("phone")}
+            />
+            {errors.phone && (
+              <p className="text-xs text-red-500">{errors.phone.message}</p>
             )}
           </div>
 

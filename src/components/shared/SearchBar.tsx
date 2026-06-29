@@ -1,20 +1,7 @@
 import { Search } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
-interface TabOption {
-  value: string
-  label: string
-}
-
-interface SearchBarProps {
-  tabs?: TabOption[]
-  activeTab?: string
-  onTabChange?: (value: string) => void
-  searchQuery: string
-  onSearchChange: (value: string) => void
-  searchPlaceholder?: string
-}
+import type { SearchBarProps } from "@/interface/Interface"
 
 export function SearchBar({
   tabs = [],

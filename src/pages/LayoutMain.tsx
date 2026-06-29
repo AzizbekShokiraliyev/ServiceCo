@@ -1,6 +1,6 @@
+import AboutUsDialog from "@/components/shared/AboutUsDialog"
 import { Button } from "@/components/ui/button"
 import { Info } from "lucide-react"
-import AboutUsDialog from "./AlertDialot" // Fayl nomini tekshiring
 
 const LayoutMain = () => {
   return (

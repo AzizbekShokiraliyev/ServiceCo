@@ -1,45 +1,16 @@
-import { useState, useMemo } from "react"
-import { MapPin, User, Wind, Droplet, Zap } from "lucide-react"
+import { useState } from "react"
+import { MapPin, User } from "lucide-react"
 import { ListContainer } from "@/components/shared/ListContainer"
 import { InfoListItem } from "@/components/shared/InfoListItem"
 import { SearchBar } from "@/components/shared/SearchBar"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import type { JobType, JobStatus } from "@/interface/Interface"
+import { AppPagination } from "@/components/shared/AppPagination" // <-- Yaratilgan komponentni chaqirdik
 import { useJobs } from "@/hooks/useJobs"
-
-const TypeStyles: Record<
-  JobType,
-  { icon: React.ElementType; bg: string; text: string }
-> = {
-  hvac: { icon: Wind, bg: "bg-orange-500/10", text: "text-orange-500" },
-  plumbing: { icon: Droplet, bg: "bg-cyan-500/10", text: "text-cyan-500" },
-  electrical: { icon: Zap, bg: "bg-yellow-500/10", text: "text-yellow-500" },
-}
-
-const StatusStyles: Record<JobStatus, string> = {
-  on_way: "text-muted-foreground border-border/60",
-  in_progress: "text-blue-400 border-blue-500/30",
-  completed: "text-emerald-400 border-emerald-500/30",
-}
-
-const StatusLabels: Record<JobStatus, string> = {
-  on_way: "Yo'lda",
-  in_progress: "Jarayonda",
-  completed: "Bajarildi",
-}
+import { JOB_STATUS_CONFIG, JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 
 const JOB_TABS = [
   { value: "active", label: "Faol ishlar" },
   { value: "completed", label: "Bajarilganlar" },
 ]
-
 const ITEMS_PER_PAGE = 4
 
 export function RecentJobs() {
@@ -59,93 +30,31 @@ export function RecentJobs() {
     setCurrentPage(1)
   }
 
-  const filteredJobs = useMemo(() => {
-    const query = searchQuery.trim().toLowerCase()
-    return jobs.filter((job) => {
-      if (activeTab === "active" && job.status === "completed") return false
-      if (activeTab === "completed" && job.status !== "completed") return false
+  const query = searchQuery.trim().toLowerCase()
 
-      if (query) {
-        const matchesClient = job.client_name?.toLowerCase().includes(query)
-        const matchesLocation = job.address?.toLowerCase().includes(query)
-        const matchesTech = job.technician?.full_name
-          ?.toLowerCase()
-          .includes(query)
-        return !!(matchesClient || matchesLocation || matchesTech)
-      }
+  const filteredJobs = jobs.filter((job) => {
+    if (activeTab === "active" && job.status === "completed") return false
+    if (activeTab === "completed" && job.status !== "completed") return false
 
-      return true
-    })
-  }, [jobs, activeTab, searchQuery])
+    if (query) {
+      const matchesClient = job.client_name?.toLowerCase().includes(query)
+      const matchesLocation = job.address?.toLowerCase().includes(query)
+      const matchesTech = job.technician?.full_name
+        ?.toLowerCase()
+        .includes(query)
+      return !!(matchesClient || matchesLocation || matchesTech)
+    }
 
-  const totalPages = useMemo(() => {
-    return Math.ceil(filteredJobs.length / ITEMS_PER_PAGE) || 1
-  }, [filteredJobs.length])
+    return true
+  })
 
+  const totalPages = Math.ceil(filteredJobs.length / ITEMS_PER_PAGE) || 1
   const sanitizedCurrentPage =
     currentPage > totalPages ? totalPages : currentPage
 
-  // ✅ Hozirgi sahifadagi joblarni ajratib olish (slice)
-  const currentJobs = useMemo(() => {
-    return filteredJobs.slice(
-      (sanitizedCurrentPage - 1) * ITEMS_PER_PAGE,
-      sanitizedCurrentPage * ITEMS_PER_PAGE
-    )
-  }, [filteredJobs, sanitizedCurrentPage])
-
-  // ✅ Pagignatsiya UI-ni keraksiz DOM-elementlarisiz va optimallashgan holda render qilish
-  const paginationFooter = useMemo(
-    () => (
-      <Pagination>
-        <PaginationContent>
-          <PaginationItem>
-            <PaginationPrevious
-              onClick={
-                sanitizedCurrentPage > 1
-                  ? () => setCurrentPage((p) => p - 1)
-                  : undefined
-              }
-              className={
-                sanitizedCurrentPage === 1
-                  ? "pointer-events-none opacity-40"
-                  : "cursor-pointer"
-              }
-            />
-          </PaginationItem>
-
-          {Array.from({ length: totalPages }, (_, i) => {
-            const page = i + 1
-            return (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  isActive={sanitizedCurrentPage === page}
-                  onClick={() => setCurrentPage(page)}
-                  className="cursor-pointer"
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            )
-          })}
-
-          <PaginationItem>
-            <PaginationNext
-              onClick={
-                sanitizedCurrentPage < totalPages
-                  ? () => setCurrentPage((p) => p + 1)
-                  : undefined
-              }
-              className={
-                sanitizedCurrentPage === totalPages
-                  ? "pointer-events-none opacity-40"
-                  : "cursor-pointer"
-              }
-            />
-          </PaginationItem>
-        </PaginationContent>
-      </Pagination>
-    ),
-    [sanitizedCurrentPage, totalPages]
+  const currentJobs = filteredJobs.slice(
+    (sanitizedCurrentPage - 1) * ITEMS_PER_PAGE,
+    sanitizedCurrentPage * ITEMS_PER_PAGE
   )
 
   return (
@@ -161,12 +70,18 @@ export function RecentJobs() {
 
       <ListContainer
         title="So'nggi ishlar"
-        footer={paginationFooter}
+        footer={
+          <AppPagination
+            currentPage={sanitizedCurrentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        }
         className="h-[510px]"
       >
         {isLoading ? (
           <div className="space-y-3 p-1">
-            {Array.from({ length: 4 }).map((_, i) => (
+            {Array.from({ length: ITEMS_PER_PAGE }).map((_, i) => (
               <div
                 key={i}
                 className="flex animate-pulse items-center gap-3 rounded-xl border border-border/40 bg-muted/20 p-3.5"
@@ -186,7 +101,8 @@ export function RecentJobs() {
           </div>
         ) : (
           currentJobs.map((job) => {
-            const typeConfig = TypeStyles[job.job_type ?? "electrical"]
+            const typeConfig = JOB_TYPE_CONFIG[job.job_type ?? "electrical"]
+            const statusConfig = JOB_STATUS_CONFIG[job.status]
             return (
               <InfoListItem
                 key={job.id}
@@ -194,8 +110,8 @@ export function RecentJobs() {
                 iconBg={typeConfig.bg}
                 iconColor={typeConfig.text}
                 title={job.client_name ?? "Noma'lum"}
-                statusLabel={StatusLabels[job.status] || job.status}
-                statusClassName={StatusStyles[job.status] || ""}
+                statusLabel={statusConfig?.label || job.status}
+                statusClassName={statusConfig?.className || ""}
                 subtitle={
                   <div className="flex items-center gap-3">
                     {job.address && (

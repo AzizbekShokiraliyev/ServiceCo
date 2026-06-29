@@ -18,21 +18,29 @@ import { NavLink, useNavigate } from "react-router-dom"
 import { Button } from "../ui/button"
 import { useUserRole } from "@/hooks/useUserRole"
 import { supabase } from "@/lib/supaBase"
+import { useQueryClient } from "@tanstack/react-query"
 
 const navItems = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Kanban", path: "/kanban", icon: KanbanSquare },
   { label: "Ishlarim", path: "/workers", icon: User },
-  { label: "Mening buyurtmalarim", path: "/profile", icon: User },
+  { label: "Buyurtmalarim", path: "/profile", icon: User },
 ]
 
 const Sidebar = () => {
   const { role, loading } = useUserRole()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const handleLogout = async () => {
-    await supabase.auth.signOut()
-    navigate("/login")
+    try {
+      supabase.auth.signOut()
+    } catch (error) {
+      console.error(error)
+    } finally {
+      queryClient.clear()
+      navigate("/login")
+    }
   }
 
   const filteredItems = navItems.filter((item) => {
@@ -79,7 +87,10 @@ const Sidebar = () => {
               {loading ? (
                 <div className="space-y-2.5 px-3 py-2">
                   {Array.from({ length: 3 }).map((_, i) => (
-                    <div key={i} className="h-9 w-full rounded-xl bg-muted/60 animate-pulse" />
+                    <div
+                      key={i}
+                      className="h-9 w-full animate-pulse rounded-xl bg-muted/60"
+                    />
                   ))}
                 </div>
               ) : (
@@ -126,13 +137,13 @@ const Sidebar = () => {
         <SidebarFooter>
           <div
             onClick={handleLogout}
-            className="mx-1 cursor-pointer rounded-xl border border-border/50 bg-muted/30 p-3 hover:bg-muted/60 transition-all duration-200"
+            className="mx-1 cursor-pointer rounded-xl border border-border/50 bg-muted/30 p-3 transition-all duration-200 hover:bg-muted/60"
           >
             <div className="flex items-center justify-between gap-4">
               <p className="truncate text-sm leading-none font-semibold">
                 Tizimdan chiqish
               </p>
-              <Button size="icon" variant="ghost" className="h-8 w-8">
+              <Button>
                 <LogOut className="h-4 w-4" />
               </Button>
             </div>
@@ -144,4 +155,3 @@ const Sidebar = () => {
 }
 
 export default Sidebar
-

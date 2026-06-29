@@ -1,14 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import type { LucideIcon } from "lucide-react"
-
-interface SharedStatCardProps {
-  title: string
-  value: number | string
-  subtext?: string
-  icon: LucideIcon
-  iconColor?: string
-  valueColor?: string
-}
+import type { SharedStatCardProps } from "@/interface/Interface"
 
 export function StatCard({
   title,

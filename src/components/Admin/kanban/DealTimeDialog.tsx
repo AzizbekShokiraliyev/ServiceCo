@@ -40,13 +40,18 @@ export const DealTimeDialog = ({
       return
     }
     if (start >= end) {
-      setError("Tugash vaqti boshlanish vaqtidan keyin bo'lishi kerak")
+      setError("Tugash vaqti boshlanishidan keyin bo'lishi kerak")
       return
     }
-
     setError("")
     onSave(start, end)
     setOpen(false)
+  }
+
+  // ✅ Input keydown — Enter saqlaydi, drag listener'ga yetmaydi
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    e.stopPropagation() // drag bloklash
+    if (e.key === "Enter") handleSave()
   }
 
   return (
@@ -73,22 +78,24 @@ export const DealTimeDialog = ({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="space-y-1.5">
-          <Label htmlFor="start">Boshlanish vaqti</Label>
+          <Label htmlFor="deal-start">Boshlanish vaqti</Label>
           <Input
-            id="start"
+            id="deal-start"
             type="time"
             value={start}
             onChange={(e) => setStart(e.target.value)}
+            onKeyDown={handleInputKeyDown} // ✅
           />
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="end">Tugash vaqti</Label>
+          <Label htmlFor="deal-end">Tugash vaqti</Label>
           <Input
-            id="end"
+            id="deal-end"
             type="time"
             value={end}
             onChange={(e) => setEnd(e.target.value)}
+            onKeyDown={handleInputKeyDown} // ✅
           />
         </div>
 

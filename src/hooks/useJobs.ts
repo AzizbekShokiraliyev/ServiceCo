@@ -24,19 +24,15 @@ export const useJobsByTechnician = (technicianId?: string) => {
   return useQuery({
     queryKey: ["jobs", "technician", technicianId],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("jobs")
-        .select(`
-          *,
-          technician:technicians(id, full_name, skill)
-        `)
-        .eq("technician_id", technicianId!)
-        .order("scheduled_start", { ascending: true })
-
-      if (error) throw error
+      const { data } = await supabase.from("jobs").select(`*, technician:technicians(*)`).eq("technician_id", technicianId!)
       return data as JobWithTechnician[]
     },
     enabled: !!technicianId,
+    select: (jobs) => ({
+      completed: jobs.filter((j) => j.status === "completed"),
+      remaining: jobs.filter((j) => j.status !== "completed"),
+      all: jobs
+    })
   })
 }
 
