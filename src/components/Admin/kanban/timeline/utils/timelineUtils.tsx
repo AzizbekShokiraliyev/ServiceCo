@@ -12,6 +12,17 @@ export const minutesToTime = (mins: number): string => {
   return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`
 }
 
+export const extractHHMM = (
+  value: string | null | undefined
+): string | null => {
+  if (!value) return null
+  const timePart = value.includes("T") ? value.split("T")[1] : value
+  return timePart.slice(0, 5)
+}
+
+export const isValidHHMM = (value: string): boolean =>
+  !Number.isNaN(timeToMinutes(value))
+
 export const assignLanes = (events: TimelineEvent[]): PositionedEvent[] => {
   const sorted = [...events].sort(
     (a, b) => timeToMinutes(a.startTime) - timeToMinutes(b.startTime)

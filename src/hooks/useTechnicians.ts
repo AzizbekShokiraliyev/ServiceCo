@@ -22,7 +22,12 @@ export const useTechnicianCreate = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (payload: { full_name: string; skill: Skill; phone?: string }) => {
+    mutationFn: async (payload: {
+      full_name: string
+      skill: Skill
+      phone?: string
+      description?: string
+    }) => {
       const { data, error } = await supabase
         .from("technicians")
         .insert(payload)
@@ -75,5 +80,37 @@ export const useTechnicianById = (id?: string) => {
       return data as Technician
     },
     enabled: !!id,
+  })
+}
+
+export const useTechnicianUpdate = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      id,
+      ...payload
+    }: {
+      id: string
+      full_name: string
+      skill: Skill
+      phone?: string
+      description?: string
+    }) => {
+      const { data, error } = await supabase
+        .from("technicians")
+        .update(payload)
+        .eq("id", id)
+        .select()
+        .single()
+
+      if (error) throw error
+      return data as Technician
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<Technician[]>(["technicians"], (old) =>
+        old?.map((t) => (t.id === updated.id ? updated : t)) ?? []
+      )
+    },
   })
 }

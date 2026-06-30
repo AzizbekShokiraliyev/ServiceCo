@@ -1,42 +1,54 @@
-import { Edit2, Trash2 } from "lucide-react"
+import { useState } from "react"
+import { Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-
-// Agar loyihangizdagi DeleteWorker ni ishlatmoqchi bo'lsangiz, buni commentdan chiqaring:
-// import DeleteWorker from "../kanban/actionWorker/DeleteWorker"
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group"
+import { useTechnicianDelete } from "@/hooks/useTechnicians"
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
+import WorkerFormDialog from "./actionWorker/WorkerFormDialog"
+import type { Technician } from "@/interface/Interface"
 
 interface MastersActionsProps {
-  workerId: string
+  worker: Technician
 }
 
-export default function MastersActions({ workerId }: MastersActionsProps) {
+export default function MastersActions({ worker }: MastersActionsProps) {
+  const [editOpen, setEditOpen] = useState(false)
+  const { mutate: deleteTechnician } = useTechnicianDelete()
+
   return (
-    <div className="flex items-center justify-end gap-1 opacity-50 transition-opacity group-hover:opacity-100">
-      {/* Tahrirlash tugmasi */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-        onClick={() => console.log("Edit bosildi. ID:", workerId)}
-      >
-        <Edit2 className="h-4 w-4" />
-        <span className="sr-only">Tahrirlash</span>
-      </Button>
+    <>
+      <ButtonGroup className="ml-auto w-fit">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8"
+          onClick={() => setEditOpen(true)}
+        >
+          <Pencil className="h-4 w-4" />
+        </Button>
+        <ButtonGroupSeparator />
+        <ConfirmDialog
+          trigger={
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          }
+          title="Ishchini o'chirish"
+          description={`"${worker.full_name}" ni o'chirmoqchimisiz? Bu amalni qaytarib bo'lmaydi.`}
+          onConfirm={() => deleteTechnician(worker.id)}
+        />
+      </ButtonGroup>
 
-      {/* 
-        Agar o'zingizning faylingizni ishlatsangiz, pastdagi Button o'rniga shuni qo'ying: 
-        <DeleteWorker workerId={workerId} /> 
-      */}
-
-      {/* O'chirish tugmasi */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-        onClick={() => console.log("Delete bosildi. ID:", workerId)}
-      >
-        <Trash2 className="h-4 w-4" />
-        <span className="sr-only">O'chirish</span>
-      </Button>
-    </div>
+      <WorkerFormDialog
+        mode="edit"
+        worker={worker}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+      />
+    </>
   )
 }

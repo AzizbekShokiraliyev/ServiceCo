@@ -2,11 +2,8 @@ import { DndContext, DragOverlay, pointerWithin } from "@dnd-kit/core"
 import { LayoutGrid, CalendarDays } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-// Komponentlar va Hooklar
 import { KanbanColumn } from "./KanbanColumn"
 import { KanbanCard } from "./KanbanCard"
-import AddWorkerModal from "./actionWorker/AddWorkerModal"
-import DeleteWorker from "./actionWorker/DeleteWorker"
 import { AssignTimeModal } from "./AssignTimeModal"
 import { TimelineView } from "./timeline/TimelineView"
 
@@ -71,9 +68,6 @@ function KanbanContent() {
         </Tabs>
 
         <div className="flex items-center gap-2">
-          <DeleteWorker />
-          <AddWorkerModal />
-
           <Tabs
             value={viewMode}
             onValueChange={(v) => setViewMode(v as ViewMode)}

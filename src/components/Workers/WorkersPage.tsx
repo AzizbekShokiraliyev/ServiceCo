@@ -1,24 +1,37 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { LayoutList, CalendarDays, Briefcase, CheckCircle } from "lucide-react"
+import {
+  LayoutList,
+  CalendarDays,
+  Briefcase,
+  CheckCircle,
+  ThermometerSun,
+} from "lucide-react"
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { Badge } from "@/components/ui/badge"
 
 import WorkersHeader from "./WorkersHeader"
+import { ReportSickDialog } from "./ReportSickDialog"
 import { ListContainer } from "@/components/shared/ListContainer"
 import { InfoListItem } from "@/components/shared/InfoListItem"
+import { StatCard } from "@/components/shared/StatCard"
 import {
   Timeline,
   type TimelineRow,
   type TimelineEvent,
 } from "@/components/Admin/kanban/timeline/Timeline"
+import {
+  extractHHMM,
+  isValidHHMM,
+} from "@/components/Admin/kanban/timeline/utils/timelineUtils"
 
 import { useProfile } from "@/hooks/useProfile"
 import { useJobsByTechnician } from "@/hooks/useJobs"
 import { useTechnicians } from "@/hooks/useTechnicians"
 import { JOB_TYPE_CONFIG } from "@/lib/jobStyles"
+import { useSickReportsByTechnician } from "@/hooks/Usesickreports"
 
 type ViewMode = "list" | "timeline"
 
@@ -37,6 +50,16 @@ export default function WorkersPage() {
   const completedJobs = jobGroups?.completed ?? []
   const remainingJobs = jobGroups?.remaining ?? []
 
+  // Eng so'nggi xabar bugun yuborilganmi — shunga qarab "Kasal" belgisini ko'rsatamiz
+  const { data: sickReports = [] } = useSickReportsByTechnician(
+    myTechnician?.id
+  )
+  const latestReport = sickReports[0]
+  const isSickToday =
+    latestReport &&
+    new Date(latestReport.created_at).toDateString() ===
+      new Date().toDateString()
+
   const workerRow: TimelineRow[] = myTechnician
     ? [
         {
@@ -48,16 +71,19 @@ export default function WorkersPage() {
       ]
     : []
 
-  const workerEvents: TimelineEvent[] = remainingJobs
-    .filter((j) => j.scheduled_start && j.scheduled_end)
-    .map((j) => ({
-      id: j.id,
-      rowId: myTechnician?.id ?? "",
-      title: j.title,
-      subtitle: j.address ?? "",
-      startTime: j.scheduled_start!,
-      endTime: j.scheduled_end!,
-    }))
+  const workerEvents: TimelineEvent[] = myTechnician
+    ? remainingJobs
+        .filter((j) => j.scheduled_start && j.scheduled_end)
+        .map((j) => ({
+          id: j.id,
+          rowId: myTechnician.id,
+          title: j.title,
+          subtitle: j.address ?? "",
+          startTime: extractHHMM(j.scheduled_start) ?? "",
+          endTime: extractHHMM(j.scheduled_end) ?? "",
+        }))
+        .filter((e) => isValidHHMM(e.startTime) && isValidHHMM(e.endTime))
+    : []
 
   if (profileLoading || jobsLoading) {
     return (
@@ -90,51 +116,36 @@ export default function WorkersPage() {
 
   return (
     <main className="space-y-6">
-      <WorkersHeader
-        name={myTechnician?.full_name ?? profile?.full_name ?? "Ishchi"}
-        role={myTechnician?.skill ?? "Texnik"}
-      />
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <WorkersHeader
+            name={myTechnician?.full_name ?? profile?.full_name ?? "Ishchi"}
+            role={myTechnician?.skill ?? "Texnik"}
+          />
+        </div>
+        <ReportSickDialog technicianId={myTechnician?.id} />
+      </div>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        {/* Bugungi ishlar kartasi */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Bugungi ishlar
-            </CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight">
-              {remainingJobs.length}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {new Date().toLocaleDateString("uz-UZ", {
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Bugungi ishlar"
+          value={remainingJobs.length}
+          subtext={new Date().toLocaleDateString("uz-UZ", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}
+          icon={Briefcase}
+        />
 
-        {/* Bajarilgan ishlar kartasi */}
-        <Card className="shadow-sm">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Bajarilganlar
-            </CardTitle>
-            <CheckCircle className="h-4 w-4 text-emerald-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold tracking-tight text-emerald-500">
-              {completedJobs.length}
-            </div>
-            <p className="mt-1 text-xs font-medium text-emerald-500">
-              {remainingJobs.length} ta bajariladigan ish qoldi
-            </p>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Bajarilganlar"
+          value={completedJobs.length}
+          subtext={`${remainingJobs.length} ta bajariladigan ish qoldi`}
+          icon={CheckCircle}
+          iconColor="text-emerald-500"
+          valueColor="text-emerald-500"
+        />
       </div>
 
       <ListContainer
@@ -156,6 +167,12 @@ export default function WorkersPage() {
           </Tabs>
         }
       >
+        {isSickToday && (
+          <Badge className="gap-1 bg-amber-500/10 text-amber-600 hover:bg-amber-500/10">
+            <ThermometerSun className="h-3 w-3" />
+            Kasal
+          </Badge>
+        )}
         {remainingJobs.length === 0 ? (
           <div className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
             Barcha ishlar bajarilgan yoki tayinlangan ish yo'q.
@@ -184,6 +201,14 @@ export default function WorkersPage() {
               />
             )
           })
+        ) : !myTechnician ? (
+          <div className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+            Texnik profili topilmadi, timeline ko'rsatib bo'lmaydi.
+          </div>
+        ) : workerEvents.length === 0 ? (
+          <div className="rounded-xl border border-dashed py-10 text-center text-sm text-muted-foreground">
+            Vazifalarda belgilangan vaqt yo'q, timeline bo'sh.
+          </div>
         ) : (
           <div className="pt-2">
             <Timeline

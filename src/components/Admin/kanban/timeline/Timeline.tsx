@@ -1,4 +1,3 @@
-// src/components/Admin/kanban/timeline/Timeline.tsx
 import React, { useRef } from "react"
 import { useDroppable } from "@dnd-kit/core"
 import {
@@ -41,9 +40,18 @@ const TimelineGridRow = ({
       ref={setNodeRef}
       style={{ width: TOTAL_WIDTH, height: dynamicHeight }}
       className={`relative border-b border-border/30 last:border-0 ${
-        isOver ? "bg-primary/5" : ""
+        row.isSick ? "bg-red-500/10" : isOver ? "bg-primary/5" : ""
       }`}
     >
+      {row.isSick && (
+        <span
+          title={row.sickReason}
+          className="pointer-events-none absolute top-1 left-2 z-10 flex items-center gap-1 text-[10px] font-medium text-red-600"
+        >
+          Kasal
+        </span>
+      )}
+
       {HOURS.map((h) => (
         <div
           key={h}
@@ -79,7 +87,6 @@ export const Timeline = ({
   const bodyScrollRef = useRef<HTMLDivElement>(null)
   const headerScrollRef = useRef<HTMLDivElement>(null)
   const nameScrollRef = useRef<HTMLDivElement>(null)
-  //maqsad sinxron scrol qilish
 
   const onBodyScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget
@@ -88,7 +95,6 @@ export const Timeline = ({
     if (nameScrollRef.current) nameScrollRef.current.scrollTop = el.scrollTop
   }
 
-  // hisob kitob har bir qator uchun
   const rowData = rows.map((row) => {
     const rowEvents = events.filter((e) => e.rowId === row.id)
     const positioned = assignLanes(rowEvents)
@@ -134,7 +140,13 @@ export const Timeline = ({
               className="flex items-center gap-2 border-b border-border/30 px-3 last:border-0"
             >
               {row.avatarChar && (
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
+                <div
+                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                    row.isSick
+                      ? "bg-red-500/10 text-red-600"
+                      : "bg-primary/10 text-primary"
+                  }`}
+                >
                   {row.avatarChar}
                 </div>
               )}

@@ -5,10 +5,10 @@ import {
   useTechnicians,
   useTechnicianCreate,
   useTechnicianDelete,
+  useTechnicianUpdate,
 } from "@/hooks/useTechnicians"
 import { useJobs, useJobUpdate } from "@/hooks/useJobs"
 import type {
-  Job,
   KanbanDeal,
   PendingAssign,
   Skill,
@@ -16,7 +16,8 @@ import type {
 } from "@/interface/Interface"
 import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core"
 import { SKILL_FILTERS } from "../constants/kanbanConstants"
-
+import { toast } from "sonner"
+import { useSickTechnicianIdsToday } from "@/hooks/Usesickreports"
 export type ViewMode = "kanban" | "timeline"
 
 interface KanbanContextType {
@@ -44,11 +45,16 @@ interface KanbanContextType {
   unassignedDeals: KanbanDeal[]
   techLoading: boolean
   jobsLoading: boolean
+  sickTechnicianIds: Map<string, string>
 
   // Mutations
   createTechnician: (variables: { full_name: string; skill: Skill }) => void
+  updateTechnician: (variables: {
+    id: string
+    full_name: string
+    skill: Skill
+  }) => void // qo'shildi
   deleteTechnician: (id: string) => void
-  updateJob: (variables: Partial<Job> & { id: string }) => void
 
   // Handlers
   handleTimeChange: (id: string, start: string, end: string) => void
@@ -77,7 +83,10 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     useTechnicians()
   const { data: jobsData = [], isLoading: jobsLoading } = useJobs()
   const { mutate: createTechnician } = useTechnicianCreate()
+  const { mutate: updateTechnician } = useTechnicianUpdate()
   const { mutate: deleteTechnician } = useTechnicianDelete()
+  const { data: sickTechnicianIds = new Map<string, string>() } =
+    useSickTechnicianIdsToday()
   const { mutate: updateJob } = useJobUpdate()
 
   const technicians = techniciansData
@@ -101,12 +110,20 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
   const unassignedDeals = deals.filter((d) => d.status === "Works")
   const allColumns = ["Works", ...technicians.map((t) => t.full_name)]
 
+  const blockIfSick = (tech: Technician) => {
+    const reason = sickTechnicianIds.get(tech.id)
+    if (!reason) return false
+    toast.error(`${tech.full_name} bugun kasal: ${reason}`)
+    return true
+  }
+
   const handleTimeChange = (id: string, start: string, end: string) =>
     updateJob({ id, scheduled_start: start, scheduled_end: end })
 
   const handleRowChange = (id: string, newRowId: string) => {
     const tech = technicians.find((t) => t.full_name === newRowId)
-    updateJob({ id, technician_id: tech?.id ?? null })
+    if (!tech || blockIfSick(tech)) return // ← YANGI tekshiruv
+    updateJob({ id, technician_id: tech.id })
   }
 
   const handleRemoveFromTimeline = (id: string) =>
@@ -138,7 +155,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     if (overId.startsWith("timeline-")) {
       const techName = overId.replace("timeline-", "")
       const tech = technicians.find((t) => t.full_name === techName)
-      if (!tech) return
+      if (!tech || blockIfSick(tech)) return
       const deal = deals.find((d) => d.id === activeId)
       updateJob({
         id: activeId,
@@ -153,7 +170,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     if (!overContainer || overContainer === "Works") return
 
     const tech = technicians.find((t) => t.full_name === overContainer)
-    if (!tech) return
+    if (!tech || blockIfSick(tech)) return
 
     const deal = deals.find((d) => d.id === activeId)
     setPendingStart(deal?.startTime ?? "")
@@ -212,9 +229,10 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
         unassignedDeals,
         techLoading,
         jobsLoading,
+        sickTechnicianIds,
         createTechnician,
         deleteTechnician,
-        updateJob,
+        updateTechnician,
         handleTimeChange,
         handleRowChange,
         handleRemoveFromTimeline,

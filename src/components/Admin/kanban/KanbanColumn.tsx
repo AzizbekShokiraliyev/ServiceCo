@@ -1,6 +1,6 @@
 import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { Lock } from "lucide-react"
+import { Lock, ThermometerSun } from "lucide-react"
 import { KanbanCard } from "./KanbanCard"
 import type { KanbanColumnProps } from "@/interface/Interface"
 import { useKanban } from "./context/KanbanContext"
@@ -14,7 +14,11 @@ export const KanbanColumn = ({
   subtitle,
   isDropDisabled = false,
 }: KanbanColumnProps) => {
-  const { deals, unassignedDeals } = useKanban()
+  const { deals, unassignedDeals, technicians, sickTechnicianIds } = useKanban()
+
+  const tech = technicians.find((t) => t.full_name === status)
+  const sickReason = tech ? sickTechnicianIds.get(tech.id) : undefined
+  const isSick = !!sickReason
 
   const columnDeals =
     status === "Works"
@@ -26,8 +30,9 @@ export const KanbanColumn = ({
     disabled: isDropDisabled,
   })
 
-  const borderBg =
-    isOver && !isDropDisabled
+  const borderBg = isSick
+    ? "border-red-500/40 bg-red-500/5"
+    : isOver && !isDropDisabled
       ? "border-primary/60 bg-accent/40 shadow-sm"
       : isDropDisabled
         ? "border-muted-foreground/10 bg-muted/20 opacity-90"
@@ -54,11 +59,22 @@ export const KanbanColumn = ({
           </span>
         </div>
 
-        {subtitle && (
-          <span className="text-[11px] font-medium text-muted-foreground/60">
-            {subtitle}
-          </span>
-        )}
+        <div className="flex items-center gap-3">
+          {subtitle && (
+            <span className="text-[11px] font-medium text-muted-foreground/60">
+              {subtitle}
+            </span>
+          )}
+          {isSick && (
+            <span
+              title={sickReason}
+              className="flex items-center gap-0.5 rounded-full bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-600"
+            >
+              <ThermometerSun className="h-2.5 w-2.5" />
+              Kasal
+            </span>
+          )}
+        </div>
       </div>
 
       <SortableContext

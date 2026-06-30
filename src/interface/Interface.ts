@@ -5,6 +5,7 @@ import type React from "react"
 export type ProfileRole = "admin" | "technician" | "customer"
 export type Skill = "Electrical" | "Plumbing" | "HVAC"
 export type JobType = "electrical" | "plumbing" | "hvac"
+export type SickReportStatus = "pending" | "reviewed"
 
 export type JobStatus = "pending" | "on_way" | "in_progress" | "completed"
 
@@ -18,11 +19,12 @@ export interface Profile {
 
 export interface Technician {
   id: string
-  profile_id: string | null
   full_name: string
-  phone: string | null
   skill: Skill
-  created_at: string
+  phone?: string
+  description?: string
+  created_at?: string
+  profile_id?: string
 }
 
 export interface Job {
@@ -77,7 +79,7 @@ export interface StatCardProps {
   title: string
   value: number | string
   subtext?: string
-  icon: ReactNode 
+  icon: ReactNode
   iconColor?: string
   valueColor?: string
 }
@@ -121,8 +123,10 @@ export interface TimelineRow {
   label: string
   sublabel?: string
   avatarChar?: string
+  isSick?: boolean
+  sickReason?: string
 }
- 
+
 export interface TimelineEvent {
   id: string
   rowId: string
@@ -158,7 +162,6 @@ export interface TimelineGridRowProps {
   onEventRowChange?: (id: string, newRowId: string) => void
 }
 
-
 export interface InfoListItemProps {
   icon: React.ElementType
   iconBg?: string
@@ -168,7 +171,7 @@ export interface InfoListItemProps {
   duration?: string
   statusLabel?: string
   statusClassName?: string
-  onClick?: () => void 
+  onClick?: () => void
 }
 
 export interface ListContainerProps {
@@ -177,7 +180,7 @@ export interface ListContainerProps {
   headerAction?: React.ReactNode
   children: React.ReactNode
   footer?: React.ReactNode
-  className?: string 
+  className?: string
 }
 
 export interface TabOption {
@@ -240,4 +243,12 @@ export interface TimelineBlockProps {
 export interface TimelineCardProps {
   deal: KanbanDeal
   isOverlay?: boolean
+}
+
+export interface SickReport {
+  id: string
+  technician_id: string
+  reason: string
+  status: SickReportStatus
+  created_at: string
 }

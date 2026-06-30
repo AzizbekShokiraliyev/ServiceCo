@@ -6,12 +6,17 @@ import { hasTimeConflict } from "./utils/timelineUtils"
 import { toast } from "sonner"
 import { useKanban } from "../context/KanbanContext"
 
-const toRows = (technicians: Technician[]): TimelineRow[] =>
+const toRows = (
+  technicians: Technician[],
+  sickTechnicianIds: Map<string, string>
+): TimelineRow[] =>
   technicians.map((t) => ({
     id: t.full_name,
     label: t.full_name,
     sublabel: t.skill,
     avatarChar: t.full_name[0],
+    isSick: sickTechnicianIds.has(t.id),
+    sickReason: sickTechnicianIds.get(t.id),
   }))
 
 const toEvents = (deals: KanbanDeal[]): TimelineEvent[] =>
@@ -36,17 +41,29 @@ export const TimelineView = () => {
     visibleTechnicians,
     deals,
     unassignedDeals,
+    sickTechnicianIds,
     handleRemoveFromTimeline,
     handleTimeChange,
     handleRowChange,
   } = useKanban()
 
   const events = toEvents(deals)
-  const rows = toRows(visibleTechnicians)
+  const rows = toRows(visibleTechnicians, sickTechnicianIds)
+
+  const getSickReason = (rowId: string) => {
+    const tech = visibleTechnicians.find((t) => t.full_name === rowId)
+    return tech ? sickTechnicianIds.get(tech.id) : undefined
+  }
 
   const handleTimeMove = (id: string, start: string, end: string) => {
     const event = events.find((e) => e.id === id)
     if (!event) return
+
+    const sickReason = getSickReason(event.rowId)
+    if (sickReason) {
+      toast.error(`Bu usta bugun kasal: ${sickReason}`)
+      return
+    }
     if (hasTimeConflict(events, event.rowId, start, end, id)) {
       toast.error(CONFLICT_MESSAGES.time)
       return
@@ -57,6 +74,12 @@ export const TimelineView = () => {
   const handleRowMove = (id: string, newRowId: string) => {
     const event = events.find((e) => e.id === id)
     if (!event) return
+
+    const sickReason = getSickReason(newRowId)
+    if (sickReason) {
+      toast.error(`Bu usta bugun kasal: ${sickReason}`)
+      return
+    }
     if (hasTimeConflict(events, newRowId, event.startTime, event.endTime, id)) {
       toast.error(CONFLICT_MESSAGES.row)
       return

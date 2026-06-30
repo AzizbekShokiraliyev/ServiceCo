@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useKanban } from "../context/KanbanContext"
+import { useKanban } from "../../kanban/context/KanbanContext"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 
 const SKILL_LABELS: Record<string, string> = {
