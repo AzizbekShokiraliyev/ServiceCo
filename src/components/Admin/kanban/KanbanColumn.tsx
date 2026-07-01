@@ -17,8 +17,7 @@ export const KanbanColumn = ({
 }: KanbanColumnProps) => {
   const { deals, unassignedDeals, technicians, sickTechnicianIds } = useKanban()
 
-  // status endi identifikator (tech.id yoki "Works"), ism emas.
-  // Ekranga chiqariladigan matn uchun label ishlatiladi (berilmasa, status'ning o'zi ko'rsatiladi — "Works" uchun mos).
+  // Ekranga chiqariladigan matn uchun label ishlatiladi berilmasa, status'ning o'zi ko'rsatiladi — "Works" uchun mos
   const displayLabel = label ?? status
 
   const tech = technicians.find((t) => t.id === status)

@@ -27,7 +27,7 @@ import {
   useTechnicianCreate,
   useTechnicianUpdate,
 } from "@/hooks/useTechnicians"
-import type { Skill, Technician } from "@/interface/Interface"
+import type { Skill, WorkerFormDialogProps } from "@/interface/Interface"
 import {
   workerSchema,
   type WorkerFormValues,
@@ -38,13 +38,6 @@ const SKILL_OPTIONS: { value: Skill; label: string }[] = [
   { value: "Plumbing", label: "Santexnik" },
   { value: "HVAC", label: "Konditsioner" },
 ]
-
-interface WorkerFormDialogProps {
-  mode: "add" | "edit"
-  worker?: Technician
-  open?: boolean
-  onOpenChange?: (open: boolean) => void
-}
 
 export default function WorkerFormDialog({
   mode,

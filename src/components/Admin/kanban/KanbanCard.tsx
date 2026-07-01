@@ -31,7 +31,6 @@ export const KanbanCard = ({ deal, editable = false }: KanbanCardProps) => {
       className={isDragging ? "pointer-events-none opacity-30" : "touch-none"}
     >
       <Card className={cn("flex flex-col gap-2 p-3.5", timeStatus)}>
-        {/* Yuqori qism: Ism va O'chirish tugmasi yonma-yon */}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" />
@@ -40,7 +39,6 @@ export const KanbanCard = ({ deal, editable = false }: KanbanCardProps) => {
             </span>
           </div>
 
-          {/* Faqat "Works" da turgan bo'lsa o'chirish chiqadi */}
           {deal.status === "Works" && <RejectJobDialog dealId={deal.id} />}
         </div>
 

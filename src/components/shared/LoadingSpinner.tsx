@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
 }
 
 export function LoadingSpinner({
-  className = "h-[50vh]",
+  className = "h-[95vh]",
   text = "Yuklanmoqda...",
 }: LoadingSpinnerProps) {
   return (

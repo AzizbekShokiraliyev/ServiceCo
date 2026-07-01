@@ -1,7 +1,4 @@
-interface WorkersHeaderProps {
-  name: string
-  role: string
-}
+import type { WorkersHeaderProps } from "@/interface/Interface"
 
 export default function WorkersHeader({ name, role }: WorkersHeaderProps) {
   return (

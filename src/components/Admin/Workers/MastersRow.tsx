@@ -3,7 +3,7 @@ import { TableRow, TableCell } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import MastersActions from "./MastersActions"
-import type { Technician } from "@/interface/Interface"
+import type { MastersRowProps } from "@/interface/Interface"
 
 const SKILL_CONFIG: Record<string, { label: string; className: string }> = {
   Electrical: {
@@ -33,10 +33,6 @@ const AVATAR_COLORS = [
 
 function getAvatarColor(name: string) {
   return AVATAR_COLORS[name.charCodeAt(0) % AVATAR_COLORS.length]
-}
-
-interface MastersRowProps {
-  worker: Technician
 }
 
 export function MastersRow({ worker }: MastersRowProps) {

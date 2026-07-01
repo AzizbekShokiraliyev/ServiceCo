@@ -18,13 +18,11 @@ export default function Dashboard() {
     j.created_at.startsWith(todayPrefix)
   ).length
 
-  // Tayinlanmaganlarni hisoblashda rad etilgan va yakunlangan ishlarni olib tashlaymiz
   const unassignedJobCount = jobs.filter(
     (j) =>
       !j.technician_id && j.status !== "rejected" && j.status !== "completed"
   ).length
 
-  // Rad etilganlarni alohida hisoblaymiz
   const rejectedJobCount = jobs.filter((j) => j.status === "rejected").length
 
   const activeTechCount = technicians.length
@@ -46,13 +44,13 @@ export default function Dashboard() {
       title: "Tayinlanmaganlar",
       value: jobsLoading ? "…" : unassignedJobCount,
       icon: AlertCircle,
-      iconColor: "text-amber-500", // Rangi o'zgartirildi
+      iconColor: "text-amber-500",
     },
     {
       title: "Rad etilganlar",
       value: jobsLoading ? "…" : rejectedJobCount,
       icon: XCircle,
-      iconColor: "text-destructive", // Qizil rangda ko'rinadi
+      iconColor: "text-destructive",
     },
   ]
 

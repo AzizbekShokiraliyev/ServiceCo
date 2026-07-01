@@ -50,7 +50,7 @@ function PolygonAlertContent() {
 
         <div className="space-y-1.5 pt-1">
           <span className="font-semibold text-primary">
-            🎯 Kutilayotgan yechim:
+            Kutilayotgan yechim:
           </span>
           <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
             <li>

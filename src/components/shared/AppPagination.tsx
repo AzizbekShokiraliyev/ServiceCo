@@ -20,10 +20,6 @@ export function AppPagination({
   onPageChange,
   className,
 }: AppPaginationProps) {
-  // Eslatma: Agar ma'lumotlar kam bo'lganda pagination'ni yashirmoqchi bo'lsangiz,
-  // pastdagi qatorni uncomment qiling:
-  // if (totalPages <= 1) return null;
-
   return (
     <Pagination className={className}>
       <PaginationContent>

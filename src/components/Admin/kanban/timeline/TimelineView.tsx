@@ -11,8 +11,8 @@ const toRows = (
   sickTechnicianIds: Map<string, string>
 ): TimelineRow[] =>
   technicians.map((t) => ({
-    id: t.id, // identifikator — noyob, ismlar takrorlansa ham xato bermaydi
-    label: t.full_name, // ekranga chiqadigan matn
+    id: t.id,
+    label: t.full_name,
     sublabel: t.skill,
     avatarChar: t.full_name[0],
     isSick: sickTechnicianIds.has(t.id),

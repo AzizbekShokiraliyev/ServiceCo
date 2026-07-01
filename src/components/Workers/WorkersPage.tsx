@@ -50,7 +50,6 @@ export default function WorkersPage() {
   const completedJobs = jobGroups?.completed ?? []
   const remainingJobs = jobGroups?.remaining ?? []
 
-  // Eng so'nggi xabar bugun yuborilganmi — shunga qarab "Kasal" belgisini ko'rsatamiz
   const { data: sickReports = [] } = useSickReportsByTechnician(
     myTechnician?.id
   )
@@ -216,7 +215,7 @@ export default function WorkersPage() {
               events={workerEvents}
               height="h-[140px]"
               readOnly
-              hideNameColumn // <--- SHU YERGA QO'SHILDI
+              hideNameColumn
             />
           </div>
         )}

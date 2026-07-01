@@ -31,7 +31,6 @@ const STATUS_LABELS: Record<string, string> = {
   completed: "Tugagan",
 }
 
-// InfoCard endi rangli ikonka bilan — vizual jihatdan ajralib turadi
 function InfoCard({
   icon: Icon,
   label,
@@ -66,9 +65,6 @@ export default function ClientInfo() {
   const { data: job, isLoading } = useJobById(id)
   const { mutate: updateStatus, isPending } = useJobStatusUpdate()
 
-  // Status o'zgarganda umumiy xabarnoma va cache yangilash logikasi.
-  // Toast tugma bosilgan zahoti chiqadi (chaqiruvchi joyda), bu yerda faqat
-  // cache invalidate va xato qayta ishlanadi.
   const runStatusUpdate = (
     status: JobStatus,
     options?: { onSuccessExtra?: () => void }
@@ -98,10 +94,8 @@ export default function ClientInfo() {
 
   const handleStatusChange = (value: string) => {
     if (!value) return
-    // "completed" alohida ConfirmDialog orqali boshqariladi, shu yerda e'tiborsiz qoldiriladi
     if (value === "completed") return
 
-    // Toast bosilgan zahoti chiqadi, API javobini kutmaydi
     toast.success("Holat yangilandi", {
       description: `Ish holati: ${STATUS_LABELS[value]}`,
       position: "top-center",
@@ -139,7 +133,6 @@ export default function ClientInfo() {
         </Button>
       </div>
 
-      {/* Mijoz kartochkasi */}
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-6 md:flex-row md:items-center">
@@ -164,7 +157,6 @@ export default function ClientInfo() {
         </CardHeader>
       </Card>
 
-      {/* Ma'lumotlar paneli */}
       <div className="grid gap-4 md:grid-cols-3">
         <InfoCard
           icon={Phone}

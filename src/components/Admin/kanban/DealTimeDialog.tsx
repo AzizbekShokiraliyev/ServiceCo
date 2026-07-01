@@ -15,12 +15,7 @@ import {
   timeToMinutes,
   minutesToTime,
 } from "./timeline/utils/timelineUtils"
-
-interface DealTimeDialogProps {
-  startTime?: string
-  endTime?: string
-  onSave: (startTime: string, endTime: string) => void
-}
+import type { DealTimeDialogProps } from "@/interface/Interface"
 
 const DURATIONS = [
   { label: "30 daq", value: 30 },
@@ -135,7 +130,6 @@ export const DealTimeDialog = ({
             onKeyDown={handleInputKeyDown}
             className="h-8 text-xs"
           />
-          {/* Tezkor muddat tugmalari */}
           <div className="flex flex-wrap gap-1.5 pt-1">
             {DURATIONS.map((d) => (
               <Badge

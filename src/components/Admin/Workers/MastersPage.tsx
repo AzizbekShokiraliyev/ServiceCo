@@ -50,7 +50,6 @@ export default function MastersPage() {
 
   return (
     <div className="flex h-full flex-col space-y-6 pb-4">
-      {/* 1. Header Section */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
           <h2 className="flex items-center gap-2 text-2xl font-bold tracking-tight">

@@ -75,13 +75,12 @@ const TimelineGridRow = ({
   )
 }
 
-// Interfeysga yangi prop qo'shib ketamiz (& { hideNameColumn?: boolean })
 export const Timeline = ({
   rows,
   events,
   height = "h-[500px]",
   readOnly = false,
-  hideNameColumn = false, // <-- YANGI PROP QO'SHILDI
+  hideNameColumn = false,
   onEventMove,
   onEventRemove,
   onEventRowChange,
@@ -111,7 +110,6 @@ export const Timeline = ({
       className={`flex flex-col overflow-hidden rounded-xl border border-border/40 ${height}`}
     >
       <div className="flex shrink-0 border-b border-border/30 bg-muted/40">
-        {/* CHAP TOMON HEADERI: Agar hideNameColumn true bo'lmasa ko'rsatiladi */}
         {!hideNameColumn && (
           <div
             style={{ width: NAME_COL_WIDTH, minWidth: NAME_COL_WIDTH }}
@@ -134,7 +132,6 @@ export const Timeline = ({
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* CHAP TOMON ISMLAR USTUNI: Agar hideNameColumn true bo'lmasa ko'rsatiladi */}
         {!hideNameColumn && (
           <div
             ref={nameScrollRef}

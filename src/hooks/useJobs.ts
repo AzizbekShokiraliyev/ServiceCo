@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supaBase"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type { Job, JobStatus, JobWithTechnician,  } from "@/interface/Interface"
+import type { Job, JobStatus, JobWithTechnician } from "@/interface/Interface"
 
 export const useJobs = () => {
   return useQuery({
@@ -24,15 +24,18 @@ export const useJobsByTechnician = (technicianId?: string) => {
   return useQuery({
     queryKey: ["jobs", "technician", technicianId],
     queryFn: async () => {
-      const { data } = await supabase.from("jobs").select(`*, technician:technicians(*)`).eq("technician_id", technicianId!)
+      const { data } = await supabase
+        .from("jobs")
+        .select(`*, technician:technicians(*)`)
+        .eq("technician_id", technicianId!)
       return data as JobWithTechnician[]
     },
     enabled: !!technicianId,
     select: (jobs) => ({
       completed: jobs.filter((j) => j.status === "completed"),
       remaining: jobs.filter((j) => j.status !== "completed"),
-      all: jobs
-    })
+      all: jobs,
+    }),
   })
 }
 
@@ -110,8 +113,10 @@ export const useJobStatusUpdate = () => {
       queryClient.setQueryData<JobWithTechnician[]>(["jobs"], (old) =>
         old?.map((j) => (j.id === updated.id ? updated : j)) ?? []
       )
-      queryClient.setQueryData(["jobs", "technician", updated.technician_id], (old: JobWithTechnician[] | undefined) =>
-        old?.map((j) => (j.id === updated.id ? updated : j)) ?? []
+      queryClient.setQueryData(
+        ["jobs", "technician", updated.technician_id],
+        (old: JobWithTechnician[] | undefined) =>
+          old?.map((j) => (j.id === updated.id ? updated : j)) ?? []
       )
     },
   })
@@ -122,10 +127,7 @@ export const useJobDelete = () => {
 
   return useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase
-        .from("jobs")
-        .delete()
-        .eq("id", id)
+      const { error } = await supabase.from("jobs").delete().eq("id", id)
 
       if (error) throw error
       return id
@@ -155,5 +157,29 @@ export const useJobById = (id?: string) => {
       return data as JobWithTechnician
     },
     enabled: !!id,
+  })
+}
+
+export const useJobReject = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const { data, error } = await supabase
+        .from("jobs")
+        .update({ status: "rejected" })
+        .eq("id", id)
+        .select(`*, technician:technicians(id, full_name, skill)`)
+        .single()
+
+      if (error) throw error
+      return data as JobWithTechnician
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData<JobWithTechnician[]>(["jobs"], (old) =>
+        old?.map((j) => (j.id === updated.id ? updated : j)) ?? []
+      )
+      queryClient.setQueryData(["job", updated.id], updated)
+    },
   })
 }

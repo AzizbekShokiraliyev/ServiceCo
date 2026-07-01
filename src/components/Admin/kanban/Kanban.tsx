@@ -43,12 +43,6 @@ function KanbanContent() {
   } = useKanban()
 
   const sensors = useSensors(
-    // MUHIM: activationConstraint bo'lmasa, karta ichidagi tugmalar
-    // (masalan "Rad etish") ba'zan bosilmay qoladi — chunki dnd-kit
-    // eng kichik pointer harakatini ham drag boshlanishi deb qabul qilib,
-    // click hodisasini "yutib yuboradi". 8px chegara qo'yilsa, oddiy
-    // click doim tugmaga yetib boradi, drag esa faqat haqiqatan
-    // sudralganda boshlanadi.
     useSensor(PointerSensor, {
       activationConstraint: { distance: 8 },
     })

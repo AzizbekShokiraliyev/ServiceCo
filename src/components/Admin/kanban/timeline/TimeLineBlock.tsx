@@ -4,19 +4,10 @@ import {
   HOUR_WIDTH,
   ROW_HEIGHT,
 } from "@/components/Admin/kanban/constants/timeLineConstants"
-import type { PositionedEvent, TimelineRow } from "@/interface/Interface"
 import { useTimelineInteraction } from "@/hooks/useTimelineInteraction"
 import { Button } from "@/components/ui/button"
 import { TimelineTimeEditDialog } from "./Timelinetimeeditdialog"
-
-interface TimelineBlockProps {
-  event: PositionedEvent
-  rows?: TimelineRow[]
-  readOnly?: boolean
-  onMove?: (id: string, start: string, end: string) => void
-  onRemove?: (id: string) => void
-  onRowChange?: (id: string, newRowId: string) => void
-}
+import type { TimelineBlockProps } from "@/interface/Interface"
 
 export const TimelineBlock = ({
   event,

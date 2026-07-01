@@ -258,3 +258,34 @@ export interface SickReport {
 export interface ReportSickDialogProps {
   technicianId?: string
 }
+
+export interface TimelineBlockProps {
+  event: PositionedEvent
+  rows?: TimelineRow[]
+  readOnly?: boolean
+  onMove?: (id: string, start: string, end: string) => void
+  onRemove?: (id: string) => void
+  onRowChange?: (id: string, newRowId: string) => void
+}
+
+export interface DealTimeDialogProps {
+  startTime?: string
+  endTime?: string
+  onSave: (startTime: string, endTime: string) => void
+}
+
+export interface WorkerFormDialogProps {
+  mode: "add" | "edit"
+  worker?: Technician
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export interface MastersRowProps {
+  worker: Technician
+}
+
+export interface WorkersHeaderProps {
+  name: string
+  role: string
+}

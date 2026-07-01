@@ -85,7 +85,6 @@ export function AssignTimeModal() {
               value={pendingEnd}
               onChange={(e) => setPendingEnd(e.target.value)}
             />
-            {/* Tezkor tugmalar kattaroq ko'rinishda */}
             <div className="flex flex-wrap gap-2 pt-2">
               {DURATIONS.map((d) => (
                 <Badge

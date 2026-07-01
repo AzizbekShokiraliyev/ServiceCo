@@ -106,11 +106,6 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
 
   const technicians = techniciansData
 
-  // MUHIM: status maydoni technician.id (yoki "Works") ni saqlaydi, full_name emas.
-  // "completed" va "rejected" ishlar boardda ko'rsatilmaydi — rad etilgan ish
-  // shu yerda chiqarib tashlanadi, shuning uchun foydalanuvchi uni darhol
-  // ustundan yo'qolganini ko'radi (avval bu filtr yo'q edi va rad etilgan
-  // ish ustunda o'zgarishsiz qolib, "hech narsa bo'lmagandek" ko'rinar edi).
   const deals: KanbanDeal[] = useMemo(
     () =>
       jobsData
@@ -128,8 +123,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     [jobsData]
   )
 
-  // Vaqt to'qnashuvini tekshirish uchun umumiy event ro'yxati (reusable,
-  // TimelineView'dagi mantiq bilan bir xil — dealsToEvents orqali).
+  // Vaqt to'qnashuvini tekshirish uchun umumiy event ro'yxati
   const events = useMemo(() => dealsToEvents(deals), [deals])
 
   const visibleTechnicians = useMemo(
@@ -210,7 +204,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
       const activeId = active.id as string
       const overId = over.id as string
 
-      // Timeline ustiga tashlaganda (droppable id: Timeline.tsx'da `timeline-${row.id}`)
+      // Timeline ustiga tashlaganda droppable id: Timeline.tsx'da `timeline-${row.id}`
       if (overId.startsWith("timeline-")) {
         const techId = overId.replace("timeline-", "")
         const tech = technicians.find((t) => t.id === techId)

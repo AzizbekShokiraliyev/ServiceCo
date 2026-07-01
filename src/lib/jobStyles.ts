@@ -23,8 +23,6 @@ export const JOB_STATUS_CONFIG: Record<JobStatus, JobStatusConfig> = {
     label: "Bajarildi",
     className: "bg-emerald-500/15 text-emerald-600 border-emerald-500/20",
   },
-  // Ilgari bu yozuv yo'q edi — shuning uchun rad etilgan ish "Kutilmoqda"
-  // (yoki bo'sh) ko'rinib qolar edi.
   rejected: {
     label: "Rad etildi",
     className: "bg-red-500/15 text-red-600 border-red-500/20",
