@@ -1,8 +1,8 @@
 import { Timeline, type TimelineRow, type TimelineEvent } from "./Timeline"
-import type { KanbanDeal, Technician } from "@/interface/Interface"
+import type { Technician } from "@/interface/Interface"
 import { LAYOUT } from "../constants/kanbanConstants"
 import { KanbanCard } from "../KanbanCard"
-import { hasTimeConflict } from "./utils/timelineUtils"
+import { hasTimeConflict, dealsToEvents } from "./utils/timelineUtils"
 import { toast } from "sonner"
 import { useKanban } from "../context/KanbanContext"
 
@@ -11,25 +11,13 @@ const toRows = (
   sickTechnicianIds: Map<string, string>
 ): TimelineRow[] =>
   technicians.map((t) => ({
-    id: t.full_name,
-    label: t.full_name,
+    id: t.id, // identifikator — noyob, ismlar takrorlansa ham xato bermaydi
+    label: t.full_name, // ekranga chiqadigan matn
     sublabel: t.skill,
     avatarChar: t.full_name[0],
     isSick: sickTechnicianIds.has(t.id),
     sickReason: sickTechnicianIds.get(t.id),
   }))
-
-const toEvents = (deals: KanbanDeal[]): TimelineEvent[] =>
-  deals
-    .filter((d) => d.startTime && d.endTime && d.status !== "Works")
-    .map((d) => ({
-      id: d.id,
-      rowId: d.status,
-      title: d.title,
-      subtitle: d.client,
-      startTime: d.startTime!,
-      endTime: d.endTime!,
-    }))
 
 const CONFLICT_MESSAGES = {
   time: "Bu ustaning tanlangan vaqtda boshqa ishi bor. Boshqa vaqt tanlang.",
@@ -47,11 +35,11 @@ export const TimelineView = () => {
     handleRowChange,
   } = useKanban()
 
-  const events = toEvents(deals)
+  const events: TimelineEvent[] = dealsToEvents(deals)
   const rows = toRows(visibleTechnicians, sickTechnicianIds)
 
   const getSickReason = (rowId: string) => {
-    const tech = visibleTechnicians.find((t) => t.full_name === rowId)
+    const tech = visibleTechnicians.find((t) => t.id === rowId)
     return tech ? sickTechnicianIds.get(tech.id) : undefined
   }
 

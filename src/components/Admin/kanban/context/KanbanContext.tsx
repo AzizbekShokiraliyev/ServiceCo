@@ -1,5 +1,11 @@
 /* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState } from "react"
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+} from "react"
 import type { ReactNode } from "react"
 import {
   useTechnicians,
@@ -18,7 +24,16 @@ import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core"
 import { SKILL_FILTERS } from "../constants/kanbanConstants"
 import { toast } from "sonner"
 import { useSickTechnicianIdsToday } from "@/hooks/Usesickreports"
+import {
+  validateTimeRange,
+  hasTimeConflict,
+  dealsToEvents,
+} from "../timeline/utils/timelineUtils"
+
 export type ViewMode = "kanban" | "timeline"
+
+const CONFLICT_MESSAGE =
+  "Bu usta tanlangan vaqtda band. Boshqa vaqt yoki ustani tanlang."
 
 interface KanbanContextType {
   activeDeal: KanbanDeal | null
@@ -53,7 +68,7 @@ interface KanbanContextType {
     id: string
     full_name: string
     skill: Skill
-  }) => void // qo'shildi
+  }) => void
   deleteTechnician: (id: string) => void
 
   // Handlers
@@ -91,108 +106,175 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
 
   const technicians = techniciansData
 
-  const deals: KanbanDeal[] = jobsData
-    .filter((job) => job.status !== "completed")
-    .map((job) => ({
-      id: job.id,
-      client: job.client_name ?? "Noma'lum",
-      title: job.title,
-      status: job.technician?.full_name ?? "Works",
-      startTime: job.scheduled_start ?? undefined,
-      endTime: job.scheduled_end ?? undefined,
-    }))
+  // MUHIM: status maydoni technician.id (yoki "Works") ni saqlaydi, full_name emas.
+  // "completed" va "rejected" ishlar boardda ko'rsatilmaydi — rad etilgan ish
+  // shu yerda chiqarib tashlanadi, shuning uchun foydalanuvchi uni darhol
+  // ustundan yo'qolganini ko'radi (avval bu filtr yo'q edi va rad etilgan
+  // ish ustunda o'zgarishsiz qolib, "hech narsa bo'lmagandek" ko'rinar edi).
+  const deals: KanbanDeal[] = useMemo(
+    () =>
+      jobsData
+        .filter(
+          (job) => job.status !== "completed" && job.status !== "rejected"
+        )
+        .map((job) => ({
+          id: job.id,
+          client: job.client_name ?? "Noma'lum",
+          title: job.title,
+          status: job.technician_id ?? "Works",
+          startTime: job.scheduled_start ?? undefined,
+          endTime: job.scheduled_end ?? undefined,
+        })),
+    [jobsData]
+  )
 
-  const visibleTechnicians =
-    skillFilter === "Barchasi"
-      ? technicians
-      : technicians.filter((t) => t.skill === skillFilter)
+  // Vaqt to'qnashuvini tekshirish uchun umumiy event ro'yxati (reusable,
+  // TimelineView'dagi mantiq bilan bir xil — dealsToEvents orqali).
+  const events = useMemo(() => dealsToEvents(deals), [deals])
 
-  const unassignedDeals = deals.filter((d) => d.status === "Works")
-  const allColumns = ["Works", ...technicians.map((t) => t.full_name)]
+  const visibleTechnicians = useMemo(
+    () =>
+      skillFilter === "Barchasi"
+        ? technicians
+        : technicians.filter((t) => t.skill === skillFilter),
+    [technicians, skillFilter]
+  )
 
-  const blockIfSick = (tech: Technician) => {
-    const reason = sickTechnicianIds.get(tech.id)
-    if (!reason) return false
-    toast.error(`${tech.full_name} bugun kasal: ${reason}`)
-    return true
-  }
+  const unassignedDeals = useMemo(
+    () => deals.filter((d) => d.status === "Works"),
+    [deals]
+  )
 
-  const handleTimeChange = (id: string, start: string, end: string) =>
-    updateJob({ id, scheduled_start: start, scheduled_end: end })
+  const allColumns = useMemo(
+    () => ["Works", ...technicians.map((t) => t.id)],
+    [technicians]
+  )
 
-  const handleRowChange = (id: string, newRowId: string) => {
-    const tech = technicians.find((t) => t.full_name === newRowId)
-    if (!tech || blockIfSick(tech)) return // ← YANGI tekshiruv
-    updateJob({ id, technician_id: tech.id })
-  }
+  const blockIfSick = useCallback(
+    (tech: Technician) => {
+      const reason = sickTechnicianIds.get(tech.id)
+      if (!reason) return false
+      toast.error(`${tech.full_name} bugun kasal: ${reason}`)
+      return true
+    },
+    [sickTechnicianIds]
+  )
 
-  const handleRemoveFromTimeline = (id: string) =>
-    updateJob({
-      id,
-      technician_id: null,
-      scheduled_start: null,
-      scheduled_end: null,
-    })
+  const handleTimeChange = useCallback(
+    (id: string, start: string, end: string) =>
+      updateJob({ id, scheduled_start: start, scheduled_end: end }),
+    [updateJob]
+  )
 
-  const findColumn = (id: string) =>
-    allColumns.includes(id)
-      ? id
-      : (deals.find((d) => d.id === id)?.status ?? null)
-
-  const handleDragStart = ({ active }: DragStartEvent) => {
-    const deal = deals.find((d) => d.id === active.id)
-    if (deal) setActiveDeal(deal)
-  }
-
-  const handleDragEnd = ({ active, over }: DragEndEvent) => {
-    setActiveDeal(null)
-    if (!over || active.id === over.id) return
-
-    const activeId = active.id as string
-    const overId = over.id as string
-
-    // Timeline ustiga tashlanganda
-    if (overId.startsWith("timeline-")) {
-      const techName = overId.replace("timeline-", "")
-      const tech = technicians.find((t) => t.full_name === techName)
+  const handleRowChange = useCallback(
+    (id: string, newRowId: string) => {
+      const tech = technicians.find((t) => t.id === newRowId)
       if (!tech || blockIfSick(tech)) return
-      const deal = deals.find((d) => d.id === activeId)
+      updateJob({ id, technician_id: tech.id })
+    },
+    [technicians, blockIfSick, updateJob]
+  )
+
+  const handleRemoveFromTimeline = useCallback(
+    (id: string) =>
       updateJob({
-        id: activeId,
-        technician_id: tech.id,
-        scheduled_start: deal?.startTime ?? "09:00",
-        scheduled_end: deal?.endTime ?? "10:00",
+        id,
+        technician_id: null,
+        scheduled_start: null,
+        scheduled_end: null,
+      }),
+    [updateJob]
+  )
+
+  const findColumn = useCallback(
+    (id: string) =>
+      allColumns.includes(id)
+        ? id
+        : (deals.find((d) => d.id === id)?.status ?? null),
+    [allColumns, deals]
+  )
+
+  const handleDragStart = useCallback(
+    ({ active }: DragStartEvent) => {
+      const deal = deals.find((d) => d.id === active.id)
+      if (deal) setActiveDeal(deal)
+    },
+    [deals]
+  )
+
+  const handleDragEnd = useCallback(
+    ({ active, over }: DragEndEvent) => {
+      setActiveDeal(null)
+      if (!over || active.id === over.id) return
+
+      const activeId = active.id as string
+      const overId = over.id as string
+
+      // Timeline ustiga tashlaganda (droppable id: Timeline.tsx'da `timeline-${row.id}`)
+      if (overId.startsWith("timeline-")) {
+        const techId = overId.replace("timeline-", "")
+        const tech = technicians.find((t) => t.id === techId)
+        if (!tech || blockIfSick(tech)) return
+
+        const deal = deals.find((d) => d.id === activeId)
+        const start = deal?.startTime ?? "09:00"
+        const end = deal?.endTime ?? "10:00"
+
+        if (hasTimeConflict(events, techId, start, end, activeId)) {
+          toast.error(CONFLICT_MESSAGE)
+          return
+        }
+
+        updateJob({
+          id: activeId,
+          technician_id: tech.id,
+          scheduled_start: start,
+          scheduled_end: end,
+        })
+        return
+      }
+
+      const overContainer = findColumn(overId)
+      if (!overContainer || overContainer === "Works") return
+
+      const tech = technicians.find((t) => t.id === overContainer)
+      if (!tech || blockIfSick(tech)) return
+
+      const deal = deals.find((d) => d.id === activeId)
+      setPendingStart(deal?.startTime ?? "")
+      setPendingEnd(deal?.endTime ?? "")
+      setPendingError("")
+      setPendingAssign({
+        dealId: activeId,
+        technicianId: tech.id,
+        technicianName: tech.full_name,
       })
-      return
-    }
+    },
+    [technicians, deals, events, blockIfSick, updateJob, findColumn]
+  )
 
-    const overContainer = findColumn(overId)
-    if (!overContainer || overContainer === "Works") return
-
-    const tech = technicians.find((t) => t.full_name === overContainer)
-    if (!tech || blockIfSick(tech)) return
-
-    const deal = deals.find((d) => d.id === activeId)
-    setPendingStart(deal?.startTime ?? "")
-    setPendingEnd(deal?.endTime ?? "")
-    setPendingError("")
-    setPendingAssign({
-      dealId: activeId,
-      technicianId: tech.id,
-      technicianName: tech.full_name,
-    })
-  }
-
-  const confirmPendingAssign = () => {
+  const confirmPendingAssign = useCallback(() => {
     if (!pendingAssign) return
-    if (!pendingStart || !pendingEnd) {
-      setPendingError("Boshlanish va tugash vaqtini kiriting")
+
+    const err = validateTimeRange(pendingStart, pendingEnd)
+    if (err) {
+      setPendingError(err)
       return
     }
-    if (pendingStart >= pendingEnd) {
-      setPendingError("Tugash vaqti boshlanishidan keyin bo'lishi kerak")
+
+    if (
+      hasTimeConflict(
+        events,
+        pendingAssign.technicianId,
+        pendingStart,
+        pendingEnd,
+        pendingAssign.dealId
+      )
+    ) {
+      setPendingError(CONFLICT_MESSAGE)
       return
     }
+
     updateJob({
       id: pendingAssign.dealId,
       technician_id: pendingAssign.technicianId,
@@ -200,50 +282,76 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
       scheduled_end: pendingEnd,
     })
     setPendingAssign(null)
-  }
+  }, [pendingAssign, pendingStart, pendingEnd, events, updateJob])
 
-  const cancelPendingAssign = () => {
+  const cancelPendingAssign = useCallback(() => {
     setPendingAssign(null)
-  }
+  }, [])
+
+  const value = useMemo<KanbanContextType>(
+    () => ({
+      activeDeal,
+      setActiveDeal,
+      skillFilter,
+      setSkillFilter,
+      viewMode,
+      setViewMode,
+      pendingAssign,
+      setPendingAssign,
+      pendingStart,
+      setPendingStart,
+      pendingEnd,
+      setPendingEnd,
+      pendingError,
+      setPendingError,
+      technicians,
+      visibleTechnicians,
+      deals,
+      unassignedDeals,
+      techLoading,
+      jobsLoading,
+      sickTechnicianIds,
+      createTechnician,
+      deleteTechnician,
+      updateTechnician,
+      handleTimeChange,
+      handleRowChange,
+      handleRemoveFromTimeline,
+      handleDragStart,
+      handleDragEnd,
+      confirmPendingAssign,
+      cancelPendingAssign,
+    }),
+    [
+      activeDeal,
+      skillFilter,
+      viewMode,
+      pendingAssign,
+      pendingStart,
+      pendingEnd,
+      pendingError,
+      technicians,
+      visibleTechnicians,
+      deals,
+      unassignedDeals,
+      techLoading,
+      jobsLoading,
+      sickTechnicianIds,
+      createTechnician,
+      deleteTechnician,
+      updateTechnician,
+      handleTimeChange,
+      handleRowChange,
+      handleRemoveFromTimeline,
+      handleDragStart,
+      handleDragEnd,
+      confirmPendingAssign,
+      cancelPendingAssign,
+    ]
+  )
 
   return (
-    <KanbanContext.Provider
-      value={{
-        activeDeal,
-        setActiveDeal,
-        skillFilter,
-        setSkillFilter,
-        viewMode,
-        setViewMode,
-        pendingAssign,
-        setPendingAssign,
-        pendingStart,
-        setPendingStart,
-        pendingEnd,
-        setPendingEnd,
-        pendingError,
-        setPendingError,
-        technicians,
-        visibleTechnicians,
-        deals,
-        unassignedDeals,
-        techLoading,
-        jobsLoading,
-        sickTechnicianIds,
-        createTechnician,
-        deleteTechnician,
-        updateTechnician,
-        handleTimeChange,
-        handleRowChange,
-        handleRemoveFromTimeline,
-        handleDragStart,
-        handleDragEnd,
-        confirmPendingAssign,
-        cancelPendingAssign,
-      }}
-    >
-      {children}
-    </KanbanContext.Provider>
+    <KanbanContext.Provider value={value}>{children}</KanbanContext.Provider>
   )
 }
 

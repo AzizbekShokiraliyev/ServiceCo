@@ -22,16 +22,16 @@ import {
   type TimelineRow,
   type TimelineEvent,
 } from "@/components/Admin/kanban/timeline/Timeline"
-import {
-  extractHHMM,
-  isValidHHMM,
-} from "@/components/Admin/kanban/timeline/utils/timelineUtils"
 
 import { useProfile } from "@/hooks/useProfile"
 import { useJobsByTechnician } from "@/hooks/useJobs"
 import { useTechnicians } from "@/hooks/useTechnicians"
 import { JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 import { useSickReportsByTechnician } from "@/hooks/Usesickreports"
+import {
+  extractHHMM,
+  isValidHHMM,
+} from "../Admin/kanban/timeline/utils/timelineUtils"
 
 type ViewMode = "list" | "timeline"
 
@@ -216,6 +216,7 @@ export default function WorkersPage() {
               events={workerEvents}
               height="h-[140px]"
               readOnly
+              hideNameColumn // <--- SHU YERGA QO'SHILDI
             />
           </div>
         )}

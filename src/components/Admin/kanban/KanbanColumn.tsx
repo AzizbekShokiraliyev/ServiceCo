@@ -7,6 +7,7 @@ import { useKanban } from "./context/KanbanContext"
 
 export const KanbanColumn = ({
   status,
+  label,
   heightClass = "h-[280px]",
   widthClass = "w-52",
   emptyText = "Drop here",
@@ -16,7 +17,11 @@ export const KanbanColumn = ({
 }: KanbanColumnProps) => {
   const { deals, unassignedDeals, technicians, sickTechnicianIds } = useKanban()
 
-  const tech = technicians.find((t) => t.full_name === status)
+  // status endi identifikator (tech.id yoki "Works"), ism emas.
+  // Ekranga chiqariladigan matn uchun label ishlatiladi (berilmasa, status'ning o'zi ko'rsatiladi — "Works" uchun mos).
+  const displayLabel = label ?? status
+
+  const tech = technicians.find((t) => t.id === status)
   const sickReason = tech ? sickTechnicianIds.get(tech.id) : undefined
   const isSick = !!sickReason
 
@@ -47,7 +52,7 @@ export const KanbanColumn = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <h3 className="text-xs font-bold tracking-wider text-foreground/80 uppercase">
-              {status}
+              {displayLabel}
             </h3>
             {isDropDisabled && (
               <Lock className="h-3 w-3 text-muted-foreground/60" />

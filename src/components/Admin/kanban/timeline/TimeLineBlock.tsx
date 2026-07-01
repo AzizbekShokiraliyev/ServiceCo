@@ -6,8 +6,8 @@ import {
 } from "@/components/Admin/kanban/constants/timeLineConstants"
 import type { PositionedEvent, TimelineRow } from "@/interface/Interface"
 import { useTimelineInteraction } from "@/hooks/useTimelineInteraction"
-import { TimelineTimeEditDialog } from "./Timelinetimeeditdialog"
 import { Button } from "@/components/ui/button"
+import { TimelineTimeEditDialog } from "./Timelinetimeeditdialog"
 
 interface TimelineBlockProps {
   event: PositionedEvent

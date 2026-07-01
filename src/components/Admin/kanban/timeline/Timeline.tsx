@@ -75,15 +75,17 @@ const TimelineGridRow = ({
   )
 }
 
+// Interfeysga yangi prop qo'shib ketamiz (& { hideNameColumn?: boolean })
 export const Timeline = ({
   rows,
   events,
   height = "h-[500px]",
   readOnly = false,
+  hideNameColumn = false, // <-- YANGI PROP QO'SHILDI
   onEventMove,
   onEventRemove,
   onEventRowChange,
-}: TimelineProps) => {
+}: TimelineProps & { hideNameColumn?: boolean }) => {
   const bodyScrollRef = useRef<HTMLDivElement>(null)
   const headerScrollRef = useRef<HTMLDivElement>(null)
   const nameScrollRef = useRef<HTMLDivElement>(null)
@@ -92,7 +94,8 @@ export const Timeline = ({
     const el = e.currentTarget
     if (headerScrollRef.current)
       headerScrollRef.current.scrollLeft = el.scrollLeft
-    if (nameScrollRef.current) nameScrollRef.current.scrollTop = el.scrollTop
+    if (nameScrollRef.current && !hideNameColumn)
+      nameScrollRef.current.scrollTop = el.scrollTop
   }
 
   const rowData = rows.map((row) => {
@@ -108,10 +111,13 @@ export const Timeline = ({
       className={`flex flex-col overflow-hidden rounded-xl border border-border/40 ${height}`}
     >
       <div className="flex shrink-0 border-b border-border/30 bg-muted/40">
-        <div
-          style={{ width: NAME_COL_WIDTH, minWidth: NAME_COL_WIDTH }}
-          className="shrink-0 border-r border-border/30"
-        />
+        {/* CHAP TOMON HEADERI: Agar hideNameColumn true bo'lmasa ko'rsatiladi */}
+        {!hideNameColumn && (
+          <div
+            style={{ width: NAME_COL_WIDTH, minWidth: NAME_COL_WIDTH }}
+            className="shrink-0 border-r border-border/30"
+          />
+        )}
         <div ref={headerScrollRef} className="flex-1 overflow-x-hidden">
           <div style={{ width: TOTAL_WIDTH }} className="flex">
             {HOURS.map((h) => (
@@ -128,41 +134,44 @@ export const Timeline = ({
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        <div
-          ref={nameScrollRef}
-          style={{ width: NAME_COL_WIDTH, minWidth: NAME_COL_WIDTH }}
-          className="shrink-0 overflow-hidden border-r border-border/30 bg-background"
-        >
-          {rowData.map(({ row, dynamicHeight }) => (
-            <div
-              key={row.id}
-              style={{ height: dynamicHeight }}
-              className="flex items-center gap-2 border-b border-border/30 px-3 last:border-0"
-            >
-              {row.avatarChar && (
-                <div
-                  className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
-                    row.isSick
-                      ? "bg-red-500/10 text-red-600"
-                      : "bg-primary/10 text-primary"
-                  }`}
-                >
-                  {row.avatarChar}
-                </div>
-              )}
-              <div className="min-w-0">
-                <p className="truncate text-xs font-semibold text-foreground/90">
-                  {row.label}
-                </p>
-                {row.sublabel && (
-                  <p className="text-[10px] text-muted-foreground">
-                    {row.sublabel}
-                  </p>
+        {/* CHAP TOMON ISMLAR USTUNI: Agar hideNameColumn true bo'lmasa ko'rsatiladi */}
+        {!hideNameColumn && (
+          <div
+            ref={nameScrollRef}
+            style={{ width: NAME_COL_WIDTH, minWidth: NAME_COL_WIDTH }}
+            className="shrink-0 overflow-hidden border-r border-border/30 bg-background"
+          >
+            {rowData.map(({ row, dynamicHeight }) => (
+              <div
+                key={row.id}
+                style={{ height: dynamicHeight }}
+                className="flex items-center gap-2 border-b border-border/30 px-3 last:border-0"
+              >
+                {row.avatarChar && (
+                  <div
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold ${
+                      row.isSick
+                        ? "bg-red-500/10 text-red-600"
+                        : "bg-primary/10 text-primary"
+                    }`}
+                  >
+                    {row.avatarChar}
+                  </div>
                 )}
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-semibold text-foreground/90">
+                    {row.label}
+                  </p>
+                  {row.sublabel && (
+                    <p className="text-[10px] text-muted-foreground">
+                      {row.sublabel}
+                    </p>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div
           ref={bodyScrollRef}

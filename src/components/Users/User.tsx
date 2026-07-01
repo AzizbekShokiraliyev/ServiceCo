@@ -1,8 +1,15 @@
 "use client"
 
-import { AlertCircle, MapPin, Clock, User as UserIcon } from "lucide-react"
+import {
+  AlertCircle,
+  MapPin,
+  Clock,
+  User as UserIcon,
+  XCircle,
+  CheckCircle2, // Yangi iconka qo'shildi
+} from "lucide-react"
 import UserModal from "./UserModal"
-import { useJobs } from "@/hooks/useJobs"
+import { useJobs, useJobDelete } from "@/hooks/useJobs" // useJobDelete chaqirildi
 import { useProfile } from "@/hooks/useProfile"
 import { JOB_STATUS_CONFIG, JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 
@@ -16,13 +23,33 @@ import {
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { Button } from "@/components/ui/button" // Button import qilindi
+import { toast } from "sonner" // Xabarlar uchun
 
 export default function User() {
   const { data: profile } = useProfile()
   const { data: jobs = [], isLoading } = useJobs()
+  const { mutate: deleteJob, isPending: isDeleting } = useJobDelete() // O'chirish mutatsiyasi
 
   const myJobs = jobs.filter((j) => j.created_by === profile?.id)
   const openJobs = myJobs.filter((j) => j.status !== "completed")
+
+  // Tushundim tugmasi bosilganda ishga tushadi
+  const handleAcknowledge = (id: string) => {
+    deleteJob(id, {
+      onSuccess: () => {
+        toast.success("Xabar o'chirildi", {
+          description: "Rad etilgan buyurtma ro'yxatdan olib tashlandi.",
+        })
+      },
+      onError: () => {
+        toast.error("Xatolik", {
+          description:
+            "O'chirishda xatolik yuz berdi. Qaytadan urinib ko'ring.",
+        })
+      },
+    })
+  }
 
   return (
     <div className="flex h-full flex-col space-y-6 p-1">
@@ -75,6 +102,8 @@ export default function User() {
                   </div>
                 ) : (
                   openJobs.map((job) => {
+                    const isRejected = job.status === "rejected"
+
                     const category =
                       JOB_TYPE_CONFIG[job.job_type ?? "electrical"]
                     const status = JOB_STATUS_CONFIG[job.status]
@@ -83,21 +112,39 @@ export default function User() {
                     return (
                       <div
                         key={job.id}
-                        className="group flex flex-col justify-between gap-4 rounded-xl border bg-card p-4 transition-all hover:bg-accent/20 sm:flex-row sm:items-center"
+                        className={`group flex flex-col justify-between gap-4 rounded-xl border p-4 transition-all sm:flex-row sm:items-center ${
+                          isRejected
+                            ? "border-destructive/30 bg-destructive/5 opacity-90"
+                            : "bg-card hover:bg-accent/20"
+                        }`}
                       >
-                        {/* CHAP TOMON: Ikonka, Sarlavha va Manzil */}
+                        {/* CHAP TOMON */}
                         <div className="flex items-start gap-4 sm:items-center">
                           <div
-                            className={`rounded-xl p-2.5 ${category?.bg || "bg-muted"}`}
+                            className={`rounded-xl p-2.5 ${
+                              isRejected
+                                ? "bg-destructive/10 text-destructive"
+                                : category?.bg || "bg-muted"
+                            }`}
                           >
                             <IconComponent
-                              className={`h-5 w-5 ${category?.text || "text-foreground"}`}
+                              className={`h-5 w-5 ${
+                                isRejected
+                                  ? ""
+                                  : category?.text || "text-foreground"
+                              }`}
                             />
                           </div>
 
                           <div className="space-y-1.5">
-                            <h4 className="text-base leading-none font-semibold tracking-tight transition-colors group-hover:text-primary">
-                              {job.title}
+                            <h4
+                              className={`text-base leading-none font-semibold tracking-tight transition-colors ${
+                                isRejected
+                                  ? "text-destructive"
+                                  : "group-hover:text-primary"
+                              }`}
+                            >
+                              {job.title} {isRejected && "(Rad etilgan)"}
                             </h4>
                             {job.address && (
                               <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -110,46 +157,71 @@ export default function User() {
                           </div>
                         </div>
 
-                        {/* O'NG TOMON: Usta/Vaqt (Kapsula dizayni) + Status Badge */}
+                        {/* O'NG TOMON */}
                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-                          {(job.technician?.full_name ||
-                            job.scheduled_start) && (
-                            <div className="flex items-center gap-2.5 rounded-lg border bg-muted/40 px-3 py-1.5 text-xs shadow-sm">
-                              {/* Usta ismi */}
-                              {job.technician?.full_name && (
-                                <div className="flex items-center gap-1.5">
-                                  <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                                  <span className="font-medium text-foreground/80">
-                                    {job.technician.full_name}
-                                  </span>
-                                </div>
-                              )}
-
-                              {/* O'rtadagi chiziqcha (Ajratgich) */}
-                              {job.technician?.full_name &&
-                                job.scheduled_start && (
-                                  <div className="h-3.5 w-px bg-border/80" />
+                          {/* Faqat rad etilmagan va tayinlangan bo'lsa usta ko'rinadi */}
+                          {!isRejected &&
+                            (job.technician?.full_name ||
+                              job.scheduled_start) && (
+                              <div className="flex items-center gap-2.5 rounded-lg border bg-muted/40 px-3 py-1.5 text-xs shadow-sm">
+                                {job.technician?.full_name && (
+                                  <div className="flex items-center gap-1.5">
+                                    <UserIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                    <span className="font-medium text-foreground/80">
+                                      {job.technician.full_name}
+                                    </span>
+                                  </div>
                                 )}
+                                {job.technician?.full_name &&
+                                  job.scheduled_start && (
+                                    <div className="h-3.5 w-px bg-border/80" />
+                                  )}
+                                {job.scheduled_start && job.scheduled_end && (
+                                  <div className="flex items-center gap-1.5 text-primary">
+                                    <Clock className="h-3.5 w-3.5" />
+                                    <span className="font-bold tracking-wide">
+                                      {job.scheduled_start} -{" "}
+                                      {job.scheduled_end}
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
 
-                              {/* Vaqt */}
-                              {job.scheduled_start && job.scheduled_end && (
-                                <div className="flex items-center gap-1.5 text-primary">
-                                  <Clock className="h-3.5 w-3.5" />
-                                  <span className="font-bold tracking-wide">
-                                    {job.scheduled_start} - {job.scheduled_end}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          )}
+                          {/* Holat Badge va Tushundim tugmasi */}
+                          <div className="flex items-center gap-2">
+                            {isRejected && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleAcknowledge(job.id)}
+                                disabled={isDeleting}
+                                className="h-7 gap-1.5 px-3 text-[10px] font-bold tracking-wider uppercase"
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" />
+                                Tushundim
+                              </Button>
+                            )}
 
-                          {/* Holat Badge */}
-                          <Badge
-                            variant="secondary"
-                            className={`rounded-full border px-3 py-1.5 text-[11px] font-bold tracking-wider uppercase shadow-none ${status?.className || ""}`}
-                          >
-                            {status?.label || job.status}
-                          </Badge>
+                            {isRejected ? (
+                              <Badge
+                                variant="outline"
+                                className="flex items-center gap-1.5 rounded-full border-destructive/30 bg-destructive/10 px-3 py-1.5 text-[11px] font-bold tracking-wider text-destructive uppercase shadow-none"
+                              >
+                                <XCircle className="h-3.5 w-3.5" />
+                                RAD ETILDI
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="secondary"
+                                className={`rounded-full border px-3 py-1.5 text-[11px] font-bold tracking-wider uppercase shadow-none ${
+                                  status?.className || ""
+                                }`}
+                              >
+                                {status?.label || job.status}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     )

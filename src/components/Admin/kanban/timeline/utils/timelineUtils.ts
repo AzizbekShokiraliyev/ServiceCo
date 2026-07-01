@@ -1,4 +1,8 @@
-import type { PositionedEvent, TimelineEvent } from "@/interface/Interface"
+import type {
+  KanbanDeal,
+  PositionedEvent,
+  TimelineEvent,
+} from "@/interface/Interface"
 
 export const timeToMinutes = (t: string): number => {
   const [h, m] = t.split(":").map(Number)
@@ -22,6 +26,16 @@ export const extractHHMM = (
 
 export const isValidHHMM = (value: string): boolean =>
   !Number.isNaN(timeToMinutes(value))
+
+/**
+ * Boshlanish/tugash vaqtini tekshiruvchi yagona (single source of truth) funksiya.
+ * DealTimeDialog, Timelinetimeeditdialog va KanbanContext hammasi shu yerdan foydalanadi.
+ */
+export const validateTimeRange = (start: string, end: string): string => {
+  if (!start || !end) return "Boshlanish va tugash vaqtini kiriting"
+  if (start >= end) return "Tugash vaqti boshlanishidan keyin bo'lishi kerak"
+  return ""
+}
 
 export const assignLanes = (events: TimelineEvent[]): PositionedEvent[] => {
   const sorted = [...events].sort(
@@ -65,3 +79,20 @@ export const hasTimeConflict = (
     return newStart < evEnd && newEnd > evStart
   })
 }
+
+/**
+ * KanbanDeal[] ro'yxatini Timeline uchun TimelineEvent[] ga aylantiradi.
+ * Ilgari bu mantiq TimelineView'da alohida (toEvents) yozilgan edi —
+ * endi KanbanContext ham shu yerdan foydalanadi (reject/conflict tekshiruvi uchun).
+ */
+export const dealsToEvents = (deals: KanbanDeal[]): TimelineEvent[] =>
+  deals
+    .filter((d) => d.startTime && d.endTime && d.status !== "Works")
+    .map((d) => ({
+      id: d.id,
+      rowId: d.status,
+      title: d.title,
+      subtitle: d.client,
+      startTime: d.startTime!,
+      endTime: d.endTime!,
+    }))

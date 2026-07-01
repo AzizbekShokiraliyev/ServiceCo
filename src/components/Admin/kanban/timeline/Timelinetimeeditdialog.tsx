@@ -3,6 +3,7 @@ import { Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
 import {
   Popover,
   PopoverContent,
@@ -16,12 +17,18 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import type { TimelineTimeEditDialogProps } from "@/interface/Interface"
+import {
+  validateTimeRange,
+  timeToMinutes,
+  minutesToTime,
+} from "./utils/timelineUtils"
 
-function validateTimes(start: string, end: string): string {
-  if (!start || !end) return "Boshlanish va tugash vaqtini kiriting"
-  if (start >= end) return "Tugash vaqti boshlanishidan keyin bo'lishi kerak"
-  return ""
-}
+const DURATIONS = [
+  { label: "30 daq", value: 30 },
+  { label: "1 st", value: 60 },
+  { label: "1.5 st", value: 90 },
+  { label: "2 st", value: 120 },
+]
 
 export const TimelineTimeEditDialog = ({
   event,
@@ -45,13 +52,21 @@ export const TimelineTimeEditDialog = ({
     }
   }
 
+  const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newStart = e.target.value
+    if (start && end && newStart) {
+      const diff = timeToMinutes(end) - timeToMinutes(start)
+      if (diff > 0) setEnd(minutesToTime(timeToMinutes(newStart) + diff))
+    }
+    setStart(newStart)
+  }
+
   const handleSave = () => {
-    const err = validateTimes(start, end)
+    const err = validateTimeRange(start, end)
     if (err) {
       setError(err)
       return
     }
-
     onSave(start, end)
     if (onRowChange && rowId !== event.rowId) onRowChange(rowId)
     setOpen(false)
@@ -72,7 +87,7 @@ export const TimelineTimeEditDialog = ({
       </PopoverTrigger>
 
       <PopoverContent
-        className="w-52 space-y-3 p-3"
+        className="w-[220px] space-y-3 p-3"
         onMouseDown={(e) => e.stopPropagation()}
         onClick={(e) => e.stopPropagation()}
       >
@@ -81,7 +96,7 @@ export const TimelineTimeEditDialog = ({
           <Input
             type="time"
             value={start}
-            onChange={(e) => setStart(e.target.value)}
+            onChange={handleStartChange}
             className="h-8 text-xs"
           />
         </div>
@@ -94,28 +109,36 @@ export const TimelineTimeEditDialog = ({
             onChange={(e) => setEnd(e.target.value)}
             className="h-8 text-xs"
           />
+          <div className="flex flex-wrap gap-1 pt-1">
+            {DURATIONS.map((d) => (
+              <Badge
+                key={d.value}
+                variant="outline"
+                className="cursor-pointer text-[9px] hover:bg-primary hover:text-primary-foreground"
+                onClick={() =>
+                  setEnd(minutesToTime(timeToMinutes(start) + d.value))
+                }
+              >
+                {d.label}
+              </Badge>
+            ))}
+          </div>
         </div>
 
         {onRowChange && rows.length > 0 && (
           <div className="space-y-1.5">
-            <Label>
-              <div className="text-[11px]">Ishchi</div>
-            </Label>
+            <Label className="text-[11px]">Ishchi</Label>
             <Select value={rowId} onValueChange={setRowId}>
-              <div className="h-8 w-full text-xs">
-                <SelectTrigger>
-                  <SelectValue placeholder="Tanlang" />
-                </SelectTrigger>
-              </div>
-              <div className="w-full">
-                <SelectContent>
-                  {rows.map((row) => (
-                    <SelectItem key={row.id} value={row.id} className="text-xs">
-                      {row.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </div>
+              <SelectTrigger className="h-8 text-xs">
+                <SelectValue placeholder="Tanlang" />
+              </SelectTrigger>
+              <SelectContent>
+                {rows.map((row) => (
+                  <SelectItem key={row.id} value={row.id} className="text-xs">
+                    {row.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
             </Select>
           </div>
         )}

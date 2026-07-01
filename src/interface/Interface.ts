@@ -7,7 +7,8 @@ export type Skill = "Electrical" | "Plumbing" | "HVAC"
 export type JobType = "electrical" | "plumbing" | "hvac"
 export type SickReportStatus = "pending" | "reviewed"
 
-export type JobStatus = "pending" | "on_way" | "in_progress" | "completed"
+// Boshqa statuslar qatoriga "rejected" qo'shildi 👇
+export type JobStatus = "pending" | "on_way" | "in_progress" | "completed" | "rejected"
 
 export interface Profile {
   id: string
@@ -67,6 +68,7 @@ export interface KanbanCardProps {
 
 export interface KanbanColumnProps {
   status: string
+  label?: string         
   heightClass?: string
   widthClass?: string
   emptyText?: string
@@ -251,4 +253,8 @@ export interface SickReport {
   reason: string
   status: SickReportStatus
   created_at: string
+}
+
+export interface ReportSickDialogProps {
+  technicianId?: string
 }

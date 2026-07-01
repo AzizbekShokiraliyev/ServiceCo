@@ -22,15 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  workerSchema,
-  type WorkerFormValues,
-} from "@/components/shared/validation/worker.schema"
+
 import {
   useTechnicianCreate,
   useTechnicianUpdate,
 } from "@/hooks/useTechnicians"
 import type { Skill, Technician } from "@/interface/Interface"
+import {
+  workerSchema,
+  type WorkerFormValues,
+} from "@/components/shared/validation/worker.schema"
 
 const SKILL_OPTIONS: { value: Skill; label: string }[] = [
   { value: "Electrical", label: "Elektrik" },

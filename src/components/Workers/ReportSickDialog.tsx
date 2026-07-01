@@ -13,10 +13,7 @@ import {
 } from "@/components/ui/dialog"
 
 import { useReportSickLeave } from "@/hooks/useReportSickLeave"
-
-interface ReportSickDialogProps {
-  technicianId?: string
-}
+import type { ReportSickDialogProps } from "@/interface/Interface"
 
 export function ReportSickDialog({ technicianId }: ReportSickDialogProps) {
   const [open, setOpen] = useState(false)

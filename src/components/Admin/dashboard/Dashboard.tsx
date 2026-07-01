@@ -1,4 +1,4 @@
-import { Wrench, Users, AlertCircle } from "lucide-react"
+import { Wrench, Users, AlertCircle, XCircle } from "lucide-react"
 import { StatCard } from "@/components/shared/StatCard"
 import { RecentJobs } from "./RecentJobs"
 import { useJobs } from "@/hooks/useJobs"
@@ -17,7 +17,16 @@ export default function Dashboard() {
   const todayJobCount = jobs.filter((j) =>
     j.created_at.startsWith(todayPrefix)
   ).length
-  const unassignedJobCount = jobs.filter((j) => !j.technician_id).length
+
+  // Tayinlanmaganlarni hisoblashda rad etilgan va yakunlangan ishlarni olib tashlaymiz
+  const unassignedJobCount = jobs.filter(
+    (j) =>
+      !j.technician_id && j.status !== "rejected" && j.status !== "completed"
+  ).length
+
+  // Rad etilganlarni alohida hisoblaymiz
+  const rejectedJobCount = jobs.filter((j) => j.status === "rejected").length
+
   const activeTechCount = technicians.length
 
   const stats = [
@@ -34,16 +43,22 @@ export default function Dashboard() {
       iconColor: "text-amber-500",
     },
     {
-      title: "Tayinlanmagan ishlar",
+      title: "Tayinlanmaganlar",
       value: jobsLoading ? "…" : unassignedJobCount,
       icon: AlertCircle,
-      iconColor: "text-destructive",
+      iconColor: "text-amber-500", // Rangi o'zgartirildi
+    },
+    {
+      title: "Rad etilganlar",
+      value: jobsLoading ? "…" : rejectedJobCount,
+      icon: XCircle,
+      iconColor: "text-destructive", // Qizil rangda ko'rinadi
     },
   ]
 
   return (
     <div className="mx-auto space-y-6 p-2">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
           <StatCard
             key={stat.title}

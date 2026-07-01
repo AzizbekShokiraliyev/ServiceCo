@@ -10,6 +10,7 @@ import { JOB_STATUS_CONFIG, JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 const JOB_TABS = [
   { value: "active", label: "Faol ishlar" },
   { value: "completed", label: "Bajarilganlar" },
+  { value: "rejected", label: "Rad etilganlar" }, // Yangi tab qo'shildi
 ]
 const ITEMS_PER_PAGE = 4
 
@@ -33,9 +34,16 @@ export function RecentJobs() {
   const query = searchQuery.trim().toLowerCase()
 
   const filteredJobs = jobs.filter((job) => {
-    if (activeTab === "active" && job.status === "completed") return false
+    // TAB MANTIQI: active, completed, rejected ni bir-biridan qat'iy ajratamiz
+    if (
+      activeTab === "active" &&
+      (job.status === "completed" || job.status === "rejected")
+    )
+      return false
     if (activeTab === "completed" && job.status !== "completed") return false
+    if (activeTab === "rejected" && job.status !== "rejected") return false
 
+    // QIDIRUV MANTIQI
     if (query) {
       const matchesClient = job.client_name?.toLowerCase().includes(query)
       const matchesLocation = job.address?.toLowerCase().includes(query)
