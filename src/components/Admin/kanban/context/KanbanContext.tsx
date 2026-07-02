@@ -148,25 +148,51 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
     (tech: Technician) => {
       const reason = sickTechnicianIds.get(tech.id)
       if (!reason) return false
-      toast.error(`${tech.full_name} bugun kasal: ${reason}`)
+      toast.error(`${tech.full_name} bugun kasal: ${reason}`, {
+        position: "top-center",
+      })
       return true
     },
     [sickTechnicianIds]
   )
 
+  // "Vaqt belgilash" (DealTimeDialog) orqali kartochkadan to'g'ridan-to'g'ri
+  // vaqt o'zgartirilganda ham, boshqa usta bandligi tekshiruvidan o'tishi shart —
+  // aks holda bir ustaga bir vaqtda ikkita ish qo'yib bo'ladi.
   const handleTimeChange = useCallback(
-    (id: string, start: string, end: string) =>
-      updateJob({ id, scheduled_start: start, scheduled_end: end }),
-    [updateJob]
+    (id: string, start: string, end: string) => {
+      const deal = deals.find((d) => d.id === id)
+      if (
+        deal &&
+        deal.status !== "Works" &&
+        hasTimeConflict(events, deal.status, start, end, id)
+      ) {
+        toast.error(CONFLICT_MESSAGE, { position: "top-center" })
+        return
+      }
+      updateJob({ id, scheduled_start: start, scheduled_end: end })
+    },
+    [deals, events, updateJob]
   )
 
   const handleRowChange = useCallback(
     (id: string, newRowId: string) => {
       const tech = technicians.find((t) => t.id === newRowId)
       if (!tech || blockIfSick(tech)) return
+
+      const deal = deals.find((d) => d.id === id)
+      if (
+        deal?.startTime &&
+        deal?.endTime &&
+        hasTimeConflict(events, newRowId, deal.startTime, deal.endTime, id)
+      ) {
+        toast.error(CONFLICT_MESSAGE, { position: "top-center" })
+        return
+      }
+
       updateJob({ id, technician_id: tech.id })
     },
-    [technicians, blockIfSick, updateJob]
+    [technicians, deals, events, blockIfSick, updateJob]
   )
 
   const handleRemoveFromTimeline = useCallback(
@@ -205,33 +231,17 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
       const overId = over.id as string
 
       // Timeline ustiga tashlaganda droppable id: Timeline.tsx'da `timeline-${row.id}`
-      if (overId.startsWith("timeline-")) {
-        const techId = overId.replace("timeline-", "")
-        const tech = technicians.find((t) => t.id === techId)
-        if (!tech || blockIfSick(tech)) return
+      // Kanban ustuniga tashlaganda esa droppable id — texnik id'ning o'zi.
+      // Ikkalasi ham bitta oqimga (pendingAssign -> AssignTimeModal) yuboriladi,
+      // shunda foydalanuvchi har doim vaqtni qo'lda tanlaydi va to'qnashuv bitta
+      // umumiy xabar (CONFLICT_MESSAGE) orqali tekshiriladi.
+      const techId = overId.startsWith("timeline-")
+        ? overId.replace("timeline-", "")
+        : findColumn(overId)
 
-        const deal = deals.find((d) => d.id === activeId)
-        const start = deal?.startTime ?? "09:00"
-        const end = deal?.endTime ?? "10:00"
+      if (!techId || techId === "Works") return
 
-        if (hasTimeConflict(events, techId, start, end, activeId)) {
-          toast.error(CONFLICT_MESSAGE)
-          return
-        }
-
-        updateJob({
-          id: activeId,
-          technician_id: tech.id,
-          scheduled_start: start,
-          scheduled_end: end,
-        })
-        return
-      }
-
-      const overContainer = findColumn(overId)
-      if (!overContainer || overContainer === "Works") return
-
-      const tech = technicians.find((t) => t.id === overContainer)
+      const tech = technicians.find((t) => t.id === techId)
       if (!tech || blockIfSick(tech)) return
 
       const deal = deals.find((d) => d.id === activeId)
@@ -244,7 +254,7 @@ export function KanbanProvider({ children }: { children: ReactNode }) {
         technicianName: tech.full_name,
       })
     },
-    [technicians, deals, events, blockIfSick, updateJob, findColumn]
+    [technicians, deals, blockIfSick, findColumn]
   )
 
   const confirmPendingAssign = useCallback(() => {

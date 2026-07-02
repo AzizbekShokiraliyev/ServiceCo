@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { Technician } from "@/interface/Interface"
 import type { Skill } from "@/interface/Interface"
 
+// ishchini olish
 export const useTechnicians = () => {
   return useQuery({
     queryKey: ["technicians"],
@@ -18,6 +19,7 @@ export const useTechnicians = () => {
   })
 }
 
+//ishci yaratish
 export const useTechnicianCreate = () => {
   const queryClient = useQueryClient()
 
@@ -45,6 +47,7 @@ export const useTechnicianCreate = () => {
   })
 }
 
+//ishchini ochirish
 export const useTechnicianDelete = () => {
   const queryClient = useQueryClient()
 
@@ -66,6 +69,7 @@ export const useTechnicianDelete = () => {
   })
 }
 
+//Profil sahifasi
 export const useTechnicianById = (id?: string) => {
   return useQuery({
     queryKey: ["technician", id],
@@ -83,6 +87,7 @@ export const useTechnicianById = (id?: string) => {
   })
 }
 
+// ichini uppdate qiish
 export const useTechnicianUpdate = () => {
   const queryClient = useQueryClient()
 

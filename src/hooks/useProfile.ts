@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supaBase"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { Profile } from "@/interface/Interface"
 
+// profileni olish
 export const useProfile = () => {
   return useQuery({
     queryKey: ["profile"],
@@ -21,6 +22,7 @@ export const useProfile = () => {
   })
 }
 
+// profileni update qilish
 export const useProfileUpdate = () => {
   const queryClient = useQueryClient()
 

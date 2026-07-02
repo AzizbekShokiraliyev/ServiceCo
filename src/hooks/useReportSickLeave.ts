@@ -1,10 +1,8 @@
 import { toast } from "sonner"
 import { useSickReportCreate } from "./Usesickreports"
+import type { SubmitSickReportParams } from "@/interface/Interface"
 
-interface SubmitSickReportParams {
-  technicianId?: string
-  reason: string
-}
+
 export function useReportSickLeave() {
   const { mutateAsync, isPending } = useSickReportCreate()
 

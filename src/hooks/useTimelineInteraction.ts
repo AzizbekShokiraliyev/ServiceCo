@@ -1,14 +1,8 @@
 // src/components/Admin/kanban/timeline/useTimelineInteraction.ts
 import { minutesToTime, timeToMinutes } from "@/components/Admin/kanban/timeline/utils/timelineUtils"
+import type { UseTimelineInteractionProps } from "@/interface/Interface"
 import { useState, useRef, useCallback } from "react"
 
-interface UseTimelineInteractionProps {
-  initialStart: string
-  initialEnd: string
-  hourWidth: number
-  readOnly?: boolean
-  onSave?: (start: string, end: string) => void
-}
 
 const SNAP_MINS = 15 // 15 minutlik qadamlar bilan siljiydi
 const MIN_DUR_MINS = 30 // Minimal davomiylik 30 minut
@@ -21,9 +15,6 @@ export const useTimelineInteraction = ({
   readOnly,
   onSave,
 }: UseTimelineInteractionProps) => {
-  // ✅ useEffect o'rniga: oldingi proplarni state'da saqlab, render vaqtida solishtiramiz.
-  // Bu "derived state from props" pattern — React.dev tavsiyasiga mos:
-  // https://react.dev/learn/you-might-not-need-an-effect#adjusting-some-state-when-a-prop-changes
   const [prevInitial, setPrevInitial] = useState({ initialStart, initialEnd })
   const [startMins, setStartMins] = useState(() => timeToMinutes(initialStart))
   const [endMins, setEndMins] = useState(() => timeToMinutes(initialEnd))
@@ -32,9 +23,7 @@ export const useTimelineInteraction = ({
     prevInitial.initialStart !== initialStart ||
     prevInitial.initialEnd !== initialEnd
   ) {
-    // Tashqaridan (server/parent) yangi vaqt kelganda lokal state shu zahoti yangilanadi.
-    // Bu setState render davomida chaqirilgani uchun React uni qo'shimcha
-    // commit/repaint qilmasdan, joriy renderning o'zida hisobga oladi.
+    // Tashqaridan yangi vaqt kelganda state shu zahoti yangilanadi.
     setPrevInitial({ initialStart, initialEnd })
     setStartMins(timeToMinutes(initialStart))
     setEndMins(timeToMinutes(initialEnd))

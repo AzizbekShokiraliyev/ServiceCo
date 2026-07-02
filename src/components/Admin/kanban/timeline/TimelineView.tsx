@@ -49,11 +49,13 @@ export const TimelineView = () => {
 
     const sickReason = getSickReason(event.rowId)
     if (sickReason) {
-      toast.error(`Bu usta bugun kasal: ${sickReason}`)
+      toast.error(`Bu usta bugun kasal: ${sickReason}`, {
+        position: "top-center",
+      })
       return
     }
     if (hasTimeConflict(events, event.rowId, start, end, id)) {
-      toast.error(CONFLICT_MESSAGES.time)
+      toast.error(CONFLICT_MESSAGES.time, { position: "top-center" })
       return
     }
     handleTimeChange(id, start, end)
@@ -65,11 +67,13 @@ export const TimelineView = () => {
 
     const sickReason = getSickReason(newRowId)
     if (sickReason) {
-      toast.error(`Bu usta bugun kasal: ${sickReason}`)
+      toast.error(`Bu usta bugun kasal: ${sickReason}`, {
+        position: "top-center",
+      })
       return
     }
     if (hasTimeConflict(events, newRowId, event.startTime, event.endTime, id)) {
-      toast.error(CONFLICT_MESSAGES.row)
+      toast.error(CONFLICT_MESSAGES.row, { position: "top-center" })
       return
     }
     handleRowChange(id, newRowId)

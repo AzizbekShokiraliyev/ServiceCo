@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supaBase"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { Job, JobStatus, JobWithTechnician } from "@/interface/Interface"
 
+// ishni olsih
 export const useJobs = () => {
   return useQuery({
     queryKey: ["jobs"],
@@ -20,6 +21,7 @@ export const useJobs = () => {
   })
 }
 
+// bitta texnikning ishlari
 export const useJobsByTechnician = (technicianId?: string) => {
   return useQuery({
     queryKey: ["jobs", "technician", technicianId],
@@ -39,6 +41,7 @@ export const useJobsByTechnician = (technicianId?: string) => {
   })
 }
 
+// yangi ish yaratish
 export const useJobCreate = () => {
   const queryClient = useQueryClient()
 
@@ -64,6 +67,7 @@ export const useJobCreate = () => {
   })
 }
 
+// ishni yangilash
 export const useJobUpdate = () => {
   const queryClient = useQueryClient()
 
@@ -91,6 +95,7 @@ export const useJobUpdate = () => {
   })
 }
 
+// faqat statusni o'zgartirish
 export const useJobStatusUpdate = () => {
   const queryClient = useQueryClient()
 
@@ -122,6 +127,7 @@ export const useJobStatusUpdate = () => {
   })
 }
 
+// ishni o'chirish
 export const useJobDelete = () => {
   const queryClient = useQueryClient()
 
@@ -140,6 +146,7 @@ export const useJobDelete = () => {
   })
 }
 
+// bitta ishni ID bo'yicha olish
 export const useJobById = (id?: string) => {
   return useQuery({
     queryKey: ["job", id],
@@ -160,6 +167,7 @@ export const useJobById = (id?: string) => {
   })
 }
 
+// ishni rad etish
 export const useJobReject = () => {
   const queryClient = useQueryClient()
 

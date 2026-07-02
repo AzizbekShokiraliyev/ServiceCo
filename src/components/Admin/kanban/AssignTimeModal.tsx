@@ -109,7 +109,12 @@ export function AssignTimeModal() {
           <AlertDialogCancel onClick={cancelPendingAssign}>
             Bekor qilish
           </AlertDialogCancel>
-          <AlertDialogAction onClick={confirmPendingAssign}>
+          <AlertDialogAction
+            onClick={(e) => {
+              e.preventDefault()
+              confirmPendingAssign()
+            }}
+          >
             Tayinlash
           </AlertDialogAction>
         </AlertDialogFooter>

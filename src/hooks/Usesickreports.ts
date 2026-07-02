@@ -2,6 +2,7 @@ import { supabase } from "@/lib/supaBase"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type { SickReport } from "@/interface/Interface"
 
+// yangi xabar yaratish
 export const useSickReportCreate = () => {
   const queryClient = useQueryClient()
 
@@ -25,6 +26,7 @@ export const useSickReportCreate = () => {
   })
 }
 
+// barcha xabarlar
 export const useSickReports = () => {
   return useQuery({
     queryKey: ["sick_reports"],
@@ -45,6 +47,7 @@ export const useSickReports = () => {
   })
 }
 
+// bitta texnikning tarixi
 export const useSickReportsByTechnician = (technicianId?: string) => {
   return useQuery({
     queryKey: ["sick_reports", "technician", technicianId],
@@ -62,6 +65,7 @@ export const useSickReportsByTechnician = (technicianId?: string) => {
   })
 }
 
+// bir kun cuhun
 export const useSickTechnicianIdsToday = () => {
   return useQuery({
     queryKey: ["sick_reports", "today"],

@@ -289,3 +289,16 @@ export interface WorkersHeaderProps {
   name: string
   role: string
 }
+
+export interface SubmitSickReportParams {
+  technicianId?: string
+  reason: string
+}
+
+export interface UseTimelineInteractionProps {
+  initialStart: string
+  initialEnd: string
+  hourWidth: number
+  readOnly?: boolean
+  onSave?: (start: string, end: string) => void
+}
