@@ -23,7 +23,7 @@ import { StatCard } from "@/components/shared/StatCard"
 
 import { useQueryClient } from "@tanstack/react-query"
 import { useJobById, useJobStatusUpdate } from "@/hooks/useJobs"
-import type { JobStatus } from "@/interface/Interface"
+import type { Job, JobStatus } from "@/interface/Interface"
 
 const STATUS_LABELS: Record<string, string> = {
   pending: "Kutilmoqda",
@@ -60,8 +60,22 @@ export default function ClientInfo() {
       { id, status },
       {
         onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: ["job", id] })
-          queryClient.invalidateQueries({ queryKey: ["jobs"] })
+          queryClient.setQueryData<Job | undefined>(["job", id], (oldData) => {
+            if (!oldData) return oldData
+            return {
+              ...oldData,
+              status: status,
+            }
+          })
+
+          queryClient.setQueryData<Job[] | undefined>(["jobs"], (oldData) => {
+            if (!oldData || !Array.isArray(oldData)) return oldData
+
+            return oldData.map((item) =>
+              item.id === id ? { ...item, status: status } : item
+            )
+          })
+
           toast.success("Holat yangilandi", {
             description: `Ish holati: ${STATUS_LABELS[status]}`,
             position: "top-center",

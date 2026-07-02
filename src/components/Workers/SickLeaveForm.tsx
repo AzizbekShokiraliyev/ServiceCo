@@ -110,7 +110,6 @@ export function SickLeaveForm() {
               onSelect={setRange}
               numberOfMonths={1}
               disabled={{ before: new Date() }}
-              initialFocus
             />
           </PopoverContent>
         </Popover>
