@@ -3,7 +3,8 @@ import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { Lock, ThermometerSun } from "lucide-react"
 import { KanbanCard } from "./KanbanCard"
 import type { KanbanColumnProps } from "@/interface/Interface"
-import { useKanban } from "./context/KanbanContext"
+import { useTechnicianContext } from "../context/TechnicianContext"
+import { useJobsContext } from "../context/JobsContext"
 
 export const KanbanColumn = ({
   status,
@@ -15,7 +16,8 @@ export const KanbanColumn = ({
   subtitle,
   isDropDisabled = false,
 }: KanbanColumnProps) => {
-  const { deals, unassignedDeals, technicians, sickTechnicianIds } = useKanban()
+  const { technicians, sickTechnicianIds } = useTechnicianContext()
+  const { deals, unassignedDeals } = useJobsContext()
 
   // Ekranga chiqariladigan matn uchun label ishlatiladi berilmasa, status'ning o'zi ko'rsatiladi — "Works" uchun mos
   const displayLabel = label ?? status

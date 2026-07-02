@@ -12,8 +12,8 @@ import {
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
 
-import { useKanban } from "./context/KanbanContext"
 import { timeToMinutes, minutesToTime } from "./timeline/utils/timelineUtils"
+import { useDragAssignContext } from "../context/DragAssignContext"
 
 const DURATIONS = [
   { label: "30 daq", value: 30 },
@@ -33,7 +33,7 @@ export function AssignTimeModal() {
     setPendingEnd,
     cancelPendingAssign,
     confirmPendingAssign,
-  } = useKanban()
+  } = useDragAssignContext()
 
   const handleStartChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newStart = e.target.value

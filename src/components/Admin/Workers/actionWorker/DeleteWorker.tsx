@@ -8,7 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { useKanban } from "../../kanban/context/KanbanContext"
+import { useTechnicianContext } from "../../context/TechnicianContext"
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog"
 
 const SKILL_LABELS: Record<string, string> = {
@@ -18,7 +18,8 @@ const SKILL_LABELS: Record<string, string> = {
 }
 
 const DeleteWorker = () => {
-  const { technicians: workers, deleteTechnician: onDelete } = useKanban()
+  const { technicians: workers, deleteTechnician: onDelete } =
+    useTechnicianContext()
   const [open, setOpen] = useState(false)
 
   return (

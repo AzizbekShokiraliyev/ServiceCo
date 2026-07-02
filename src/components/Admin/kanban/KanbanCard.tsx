@@ -3,14 +3,14 @@ import { CSS } from "@dnd-kit/utilities"
 import { User } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { DealTimeDialog } from "./DealTimeDialog"
-import { RejectJobDialog } from "./RejectJobDialog" // <--- Import qildik
+import { RejectJobDialog } from "./RejectJobDialog"
 import { getDealTimeStatus } from "@/lib/getDealTimeStatus"
 import { cn } from "@/lib/utils"
 import type { KanbanCardProps } from "@/interface/Interface"
-import { useKanban } from "./context/KanbanContext"
+import { useJobsContext } from "../context/JobsContext"
 
 export const KanbanCard = ({ deal, editable = false }: KanbanCardProps) => {
-  const { handleTimeChange } = useKanban()
+  const { handleTimeChange } = useJobsContext()
   const {
     setNodeRef,
     transform,

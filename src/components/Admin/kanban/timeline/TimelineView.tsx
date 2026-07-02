@@ -4,7 +4,8 @@ import { LAYOUT } from "../constants/kanbanConstants"
 import { KanbanCard } from "../KanbanCard"
 import { hasTimeConflict, dealsToEvents } from "./utils/timelineUtils"
 import { toast } from "sonner"
-import { useKanban } from "../context/KanbanContext"
+import { useJobsContext } from "../../context/JobsContext"
+import { useTechnicianContext } from "../../context/TechnicianContext"
 
 const toRows = (
   technicians: Technician[],
@@ -25,15 +26,14 @@ const CONFLICT_MESSAGES = {
 }
 
 export const TimelineView = () => {
+  const { visibleTechnicians, sickTechnicianIds } = useTechnicianContext()
   const {
-    visibleTechnicians,
     deals,
     unassignedDeals,
-    sickTechnicianIds,
     handleRemoveFromTimeline,
     handleTimeChange,
     handleRowChange,
-  } = useKanban()
+  } = useJobsContext()
 
   const events: TimelineEvent[] = dealsToEvents(deals)
   const rows = toRows(visibleTechnicians, sickTechnicianIds)

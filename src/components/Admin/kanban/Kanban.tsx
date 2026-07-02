@@ -16,11 +16,11 @@ import { TimelineView } from "./timeline/TimelineView"
 
 import { LAYOUT, SKILL_FILTERS } from "./constants/kanbanConstants"
 import type { Skill } from "@/interface/Interface"
-import {
-  KanbanProvider,
-  useKanban,
-  type ViewMode,
-} from "./context/KanbanContext"
+import { KanbanProviders } from "../context/KanbanProviders"
+import { useTechnicianContext } from "../context/TechnicianContext"
+import { useJobsContext } from "../context/JobsContext"
+import { useDragAssignContext } from "../context/DragAssignContext"
+import { useViewModeContext, type ViewMode } from "../context/ViewModeContext"
 
 const SKILL_LABELS: Record<Skill, string> = {
   Electrical: "Elektrik",
@@ -29,18 +29,11 @@ const SKILL_LABELS: Record<Skill, string> = {
 }
 
 function KanbanContent() {
-  const {
-    activeDeal,
-    skillFilter,
-    setSkillFilter,
-    viewMode,
-    setViewMode,
-    visibleTechnicians,
-    techLoading,
-    jobsLoading,
-    handleDragStart,
-    handleDragEnd,
-  } = useKanban()
+  const { skillFilter, setSkillFilter, visibleTechnicians, techLoading } =
+    useTechnicianContext()
+  const { jobsLoading } = useJobsContext()
+  const { activeDeal, handleDragStart, handleDragEnd } = useDragAssignContext()
+  const { viewMode, setViewMode } = useViewModeContext()
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -147,9 +140,9 @@ function KanbanContent() {
 
 const Kanban = () => {
   return (
-    <KanbanProvider>
+    <KanbanProviders>
       <KanbanContent />
-    </KanbanProvider>
+    </KanbanProviders>
   )
 }
 

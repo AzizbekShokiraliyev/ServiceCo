@@ -9,7 +9,7 @@ import {
   CheckCircle2, // Yangi iconka qo'shildi
 } from "lucide-react"
 import UserModal from "./UserModal"
-import { useJobs, useJobDelete } from "@/hooks/useJobs" // useJobDelete chaqirildi
+import { useJobs, useJobDelete } from "@/hooks/useJobs"
 import { useProfile } from "@/hooks/useProfile"
 import { JOB_STATUS_CONFIG, JOB_TYPE_CONFIG } from "@/lib/jobStyles"
 
@@ -34,7 +34,6 @@ export default function User() {
   const myJobs = jobs.filter((j) => j.created_by === profile?.id)
   const openJobs = myJobs.filter((j) => j.status !== "completed")
 
-  // Tushundim tugmasi bosilganda ishga tushadi
   const handleAcknowledge = (id: string) => {
     deleteJob(id, {
       onSuccess: () => {
