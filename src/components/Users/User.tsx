@@ -29,7 +29,7 @@ import { toast } from "sonner" // Xabarlar uchun
 export default function User() {
   const { data: profile } = useProfile()
   const { data: jobs = [], isLoading } = useJobs()
-  const { mutate: deleteJob, isPending: isDeleting } = useJobDelete() // O'chirish mutatsiyasi
+  const { mutate: deleteJob, isPending: isDeleting } = useJobDelete()
 
   const myJobs = jobs.filter((j) => j.created_by === profile?.id)
   const openJobs = myJobs.filter((j) => j.status !== "completed")
@@ -118,7 +118,6 @@ export default function User() {
                             : "bg-card hover:bg-accent/20"
                         }`}
                       >
-                        {/* CHAP TOMON */}
                         <div className="flex items-start gap-4 sm:items-center">
                           <div
                             className={`rounded-xl p-2.5 ${
@@ -157,9 +156,7 @@ export default function User() {
                           </div>
                         </div>
 
-                        {/* O'NG TOMON */}
                         <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-                          {/* Faqat rad etilmagan va tayinlangan bo'lsa usta ko'rinadi */}
                           {!isRejected &&
                             (job.technician?.full_name ||
                               job.scheduled_start) && (
@@ -188,7 +185,6 @@ export default function User() {
                               </div>
                             )}
 
-                          {/* Holat Badge va Tushundim tugmasi */}
                           <div className="flex items-center gap-2">
                             {isRejected && (
                               <Button
