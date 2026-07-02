@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -8,7 +8,11 @@ import React, {
 import type { ReactNode } from "react"
 import type { DragStartEvent, DragEndEvent } from "@dnd-kit/core"
 import { useJobUpdate } from "@/hooks/useJobs"
-import type { KanbanDeal, PendingAssign } from "@/interface/Interface"
+import type {
+  DragAssignContextType,
+  KanbanDeal,
+  PendingAssign,
+} from "@/interface/Interface"
 
 import {
   validateTimeRange,
@@ -20,26 +24,6 @@ import { useJobsContext } from "./JobsContext"
 
 const CONFLICT_MESSAGE =
   "Bu usta tanlangan vaqtda band. Boshqa vaqt yoki ustani tanlang."
-
-interface DragAssignContextType {
-  activeDeal: KanbanDeal | null
-  setActiveDeal: React.Dispatch<React.SetStateAction<KanbanDeal | null>>
-
-  pendingAssign: PendingAssign | null
-  setPendingAssign: React.Dispatch<React.SetStateAction<PendingAssign | null>>
-  pendingStart: string
-  setPendingStart: (value: string) => void
-  pendingEnd: string
-  setPendingEnd: (value: string) => void
-  pendingError: string
-  setPendingError: (value: string) => void
-
-  // Handlers
-  handleDragStart: (event: DragStartEvent) => void
-  handleDragEnd: (event: DragEndEvent) => void
-  confirmPendingAssign: () => void
-  cancelPendingAssign: () => void
-}
 
 const DragAssignContext = createContext<DragAssignContextType | undefined>(
   undefined

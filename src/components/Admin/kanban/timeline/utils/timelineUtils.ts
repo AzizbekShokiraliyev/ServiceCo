@@ -27,7 +27,7 @@ export const extractHHMM = (
 export const isValidHHMM = (value: string): boolean =>
   !Number.isNaN(timeToMinutes(value))
 
-// Boshlanish/tugash vaqtini tekshiruvchi yagona (single source of truth) funksiya
+// Boshlanish/tugash vaqtini tekshiruvchi funksiya
 export const validateTimeRange = (start: string, end: string): string => {
   if (!start || !end) return "Boshlanish va tugash vaqtini kiriting"
   if (start >= end) return "Tugash vaqti boshlanishidan keyin bo'lishi kerak"
@@ -77,7 +77,7 @@ export const hasTimeConflict = (
   })
 }
 
-// KanbanDeal[] ro'yxatini Timeline uchun TimelineEvent[] ga aylantiradi
+// KanbanDeal ro'yxatini Timeline uchun TimelineEvent ga aylantiradi
 export const dealsToEvents = (deals: KanbanDeal[]): TimelineEvent[] =>
   deals
     .filter((d) => d.startTime && d.endTime && d.status !== "Works")

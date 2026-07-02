@@ -2,12 +2,12 @@ import { useSortable } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { User } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { DealTimeDialog } from "./DealTimeDialog"
 import { RejectJobDialog } from "./RejectJobDialog"
 import { getDealTimeStatus } from "@/lib/getDealTimeStatus"
 import { cn } from "@/lib/utils"
 import type { KanbanCardProps } from "@/interface/Interface"
 import { useJobsContext } from "../context/JobsContext"
+import { TimeEditDialog } from "@/components/shared/TimeEditDialog"
 
 export const KanbanCard = ({ deal, editable = false }: KanbanCardProps) => {
   const { handleTimeChange } = useJobsContext()
@@ -48,9 +48,11 @@ export const KanbanCard = ({ deal, editable = false }: KanbanCardProps) => {
 
         {editable && (
           <div className="mt-1">
-            <DealTimeDialog
+            <TimeEditDialog
               startTime={deal.startTime}
               endTime={deal.endTime}
+              variant="button"
+              showEmployeeSelect={false}
               onSave={(start, end) => handleTimeChange(deal.id, start, end)}
             />
           </div>

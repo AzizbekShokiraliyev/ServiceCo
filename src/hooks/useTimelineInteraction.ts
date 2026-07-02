@@ -4,9 +4,9 @@ import type { UseTimelineInteractionProps } from "@/interface/Interface"
 import { useState, useRef, useCallback } from "react"
 
 
-const SNAP_MINS = 15 // 15 minutlik qadamlar bilan siljiydi
-const MIN_DUR_MINS = 30 // Minimal davomiylik 30 minut
-const MAX_MINS = 1440 // 24 soat * 60
+const SNAP_MINS = 15 
+const MIN_DUR_MINS = 30 
+const MAX_MINS = 1440 // 24 soat
 
 export const useTimelineInteraction = ({
   initialStart,

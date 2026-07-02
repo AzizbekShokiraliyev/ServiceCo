@@ -1,4 +1,3 @@
-// @/components/shared/ConfirmDialog.tsx
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -10,7 +9,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
-import { Loader2 } from "lucide-react" // Yuklanish iconkasi
+import { Loader2 } from "lucide-react"
 import type { ConfirmDialogProps } from "@/interface/Interface"
 
 export function ConfirmDialog({
@@ -20,7 +19,7 @@ export function ConfirmDialog({
   confirmLabel = "Tasdiqlash",
   cancelLabel = "Bekor qilish",
   variant = "default",
-  isLoading = false, // <--- SHU QO'SHILDI
+  isLoading = false,
   onConfirm,
 }: ConfirmDialogProps & { isLoading?: boolean }) {
   return (
@@ -38,14 +37,13 @@ export function ConfirmDialog({
             {cancelLabel}
           </AlertDialogCancel>
           <AlertDialogAction
-            disabled={isLoading} // <--- API ishlayotganda tugma bloklanadi
+            disabled={isLoading}
             className={
               variant === "destructive"
                 ? "text-destructive-foreground bg-destructive hover:bg-destructive/90"
                 : "bg-primary text-primary-foreground hover:bg-primary/90"
             }
-            onClick={(e) => {
-              e.preventDefault() // Modal darhol yopilib qolmasligi uchun
+            onClick={() => {
               onConfirm()
             }}
           >

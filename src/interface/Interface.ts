@@ -1,3 +1,7 @@
+import type { ViewMode } from "@/components/Admin/context/ViewModeContext"
+import type { SKILL_FILTERS } from "@/components/Admin/kanban/constants/kanbanConstants"
+import type { SickInfoMap } from "@/lib/sickReportUtils"
+import type { DragEndEvent, DragStartEvent } from "@dnd-kit/core"
 import type { LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
 import type React from "react"
@@ -128,6 +132,20 @@ export interface TimelineRow {
   sickReason?: string
 }
 
+export interface SickReport {
+  id: string
+  technician_id: string
+  reason: string
+  start_date: string   
+  end_date: string      
+  created_at: string
+  technician?: {
+    id: string
+    full_name: string
+    skill: string
+  }
+}
+
 export interface TimelineEvent {
   id: string
   rowId: string
@@ -136,6 +154,13 @@ export interface TimelineEvent {
   startTime: string
   endTime: string
 }
+
+export type SickInfo = {
+  reason: string
+  startDate?: string 
+  endDate: string 
+}
+
 
 export interface PositionedEvent extends TimelineEvent {
   laneIndex: number
@@ -300,4 +325,57 @@ export interface UseTimelineInteractionProps {
   hourWidth: number
   readOnly?: boolean
   onSave?: (start: string, end: string) => void
+}
+
+export interface DragAssignContextType {
+  activeDeal: KanbanDeal | null
+  setActiveDeal: React.Dispatch<React.SetStateAction<KanbanDeal | null>>
+  pendingAssign: PendingAssign | null
+  setPendingAssign: React.Dispatch<React.SetStateAction<PendingAssign | null>>
+  pendingStart: string
+  setPendingStart: (value: string) => void
+  pendingEnd: string
+  setPendingEnd: (value: string) => void
+  pendingError: string
+  setPendingError: (value: string) => void
+  handleDragStart: (event: DragStartEvent) => void
+  handleDragEnd: (event: DragEndEvent) => void
+  confirmPendingAssign: () => void
+  cancelPendingAssign: () => void
+}
+
+export interface JobsContextType {
+  deals: KanbanDeal[]
+  unassignedDeals: KanbanDeal[]
+  jobsLoading: boolean
+
+  handleTimeChange: (id: string, start: string, end: string) => void
+  handleRowChange: (id: string, newRowId: string) => void
+  handleRemoveFromTimeline: (id: string) => void
+}
+
+export interface TechnicianContextType {
+  technicians: Technician[]
+  visibleTechnicians: Technician[]
+  techLoading: boolean
+  skillFilter: (typeof SKILL_FILTERS)[number]
+  setSkillFilter: React.Dispatch<
+    React.SetStateAction<(typeof SKILL_FILTERS)[number]>
+  >
+  sickTechnicianIds: SickInfoMap
+
+  // Mutations
+  createTechnician: (variables: { full_name: string; skill: Skill }) => void
+  updateTechnician: (variables: {
+    id: string
+    full_name: string
+    skill: Skill
+  }) => void
+  deleteTechnician: (id: string) => void
+  blockIfSick: (tech: Technician) => boolean
+}
+
+export interface ViewModeContextType {
+  viewMode: ViewMode
+  setViewMode: React.Dispatch<React.SetStateAction<ViewMode>>
 }

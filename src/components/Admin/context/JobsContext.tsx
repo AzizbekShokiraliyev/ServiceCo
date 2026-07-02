@@ -1,8 +1,7 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useMemo, useCallback } from "react"
 import type { ReactNode } from "react"
 import { useJobs, useJobUpdate } from "@/hooks/useJobs"
-import type { KanbanDeal } from "@/interface/Interface"
+import type { JobsContextType, KanbanDeal } from "@/interface/Interface"
 import { toast } from "sonner"
 import {
   hasTimeConflict,
@@ -12,17 +11,6 @@ import { useTechnicianContext } from "./TechnicianContext"
 
 const CONFLICT_MESSAGE =
   "Bu usta tanlangan vaqtda band. Boshqa vaqt yoki ustani tanlang."
-
-interface JobsContextType {
-  deals: KanbanDeal[]
-  unassignedDeals: KanbanDeal[]
-  jobsLoading: boolean
-
-  // Handlers
-  handleTimeChange: (id: string, start: string, end: string) => void
-  handleRowChange: (id: string, newRowId: string) => void
-  handleRemoveFromTimeline: (id: string) => void
-}
 
 const JobsContext = createContext<JobsContextType | undefined>(undefined)
 

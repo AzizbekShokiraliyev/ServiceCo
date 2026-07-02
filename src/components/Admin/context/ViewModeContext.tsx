@@ -1,13 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, { createContext, useContext, useState, useMemo } from "react"
+import type { ViewModeContextType } from "@/interface/Interface"
+import { createContext, useContext, useState, useMemo } from "react"
 import type { ReactNode } from "react"
 
 export type ViewMode = "kanban" | "timeline"
-
-interface ViewModeContextType {
-  viewMode: ViewMode
-  setViewMode: React.Dispatch<React.SetStateAction<ViewMode>>
-}
 
 const ViewModeContext = createContext<ViewModeContextType | undefined>(
   undefined

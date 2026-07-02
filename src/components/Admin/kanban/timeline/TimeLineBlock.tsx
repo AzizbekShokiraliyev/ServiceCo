@@ -6,8 +6,8 @@ import {
 } from "@/components/Admin/kanban/constants/timeLineConstants"
 import { useTimelineInteraction } from "@/hooks/useTimelineInteraction"
 import { Button } from "@/components/ui/button"
-import { TimelineTimeEditDialog } from "./Timelinetimeeditdialog"
 import type { TimelineBlockProps } from "@/interface/Interface"
+import { TimeEditDialog } from "@/components/shared/TimeEditDialog"
 
 export const TimelineBlock = ({
   event,
@@ -61,13 +61,19 @@ export const TimelineBlock = ({
       </div>
 
       {!readOnly && onMove ? (
-        <TimelineTimeEditDialog
-          event={event}
+        <TimeEditDialog
+          startTime={event.startTime}
+          endTime={event.endTime}
+          variant="text"
+          showEmployeeSelect={true}
+          currentRowId={event.rowId}
           rows={rows}
-          onSave={(start, end) => onMove(event.id, start, end)}
-          onRowChange={
-            onRowChange ? (rowId) => onRowChange(event.id, rowId) : undefined
-          }
+          onSave={(start, end, rowId) => {
+            onMove(event.id, start, end)
+            if (onRowChange && rowId && rowId !== event.rowId) {
+              onRowChange(event.id, rowId)
+            }
+          }}
         />
       ) : (
         <span className="pointer-events-none flex items-center gap-1 text-[10px] text-muted-foreground">

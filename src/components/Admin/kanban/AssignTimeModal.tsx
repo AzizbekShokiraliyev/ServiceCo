@@ -75,6 +75,7 @@ export function AssignTimeModal() {
               value={pendingStart}
               onChange={handleStartChange}
               autoFocus
+              style={{ colorScheme: "dark" }}
             />
           </div>
           <div className="space-y-1.5">
@@ -84,6 +85,7 @@ export function AssignTimeModal() {
               type="time"
               value={pendingEnd}
               onChange={(e) => setPendingEnd(e.target.value)}
+              style={{ colorScheme: "dark" }}
             />
             <div className="flex flex-wrap gap-2 pt-2">
               {DURATIONS.map((d) => (

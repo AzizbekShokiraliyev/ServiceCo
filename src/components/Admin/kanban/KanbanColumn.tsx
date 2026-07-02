@@ -5,6 +5,7 @@ import { KanbanCard } from "./KanbanCard"
 import type { KanbanColumnProps } from "@/interface/Interface"
 import { useTechnicianContext } from "../context/TechnicianContext"
 import { useJobsContext } from "../context/JobsContext"
+import { formatSickTooltip, formatSickBadge } from "@/lib/sickReportUtils"
 
 export const KanbanColumn = ({
   status,
@@ -19,12 +20,11 @@ export const KanbanColumn = ({
   const { technicians, sickTechnicianIds } = useTechnicianContext()
   const { deals, unassignedDeals } = useJobsContext()
 
-  // Ekranga chiqariladigan matn uchun label ishlatiladi berilmasa, status'ning o'zi ko'rsatiladi — "Works" uchun mos
   const displayLabel = label ?? status
 
   const tech = technicians.find((t) => t.id === status)
-  const sickReason = tech ? sickTechnicianIds.get(tech.id) : undefined
-  const isSick = !!sickReason
+  const sickInfo = tech ? sickTechnicianIds.get(tech.id) : undefined
+  const isSick = !!sickInfo
 
   const columnDeals =
     status === "Works"
@@ -71,13 +71,13 @@ export const KanbanColumn = ({
               {subtitle}
             </span>
           )}
-          {isSick && (
+          {isSick && sickInfo && (
             <span
-              title={sickReason}
+              title={formatSickTooltip(sickInfo)}
               className="flex items-center gap-0.5 rounded-full bg-red-500/10 px-1.5 py-0.5 text-[10px] font-medium text-red-600"
             >
               <ThermometerSun className="h-2.5 w-2.5" />
-              Kasal
+              {formatSickBadge(sickInfo)}
             </span>
           )}
         </div>

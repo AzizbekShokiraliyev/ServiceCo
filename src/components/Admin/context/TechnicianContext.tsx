@@ -1,5 +1,4 @@
-/* eslint-disable react-refresh/only-export-components */
-import React, {
+import {
   createContext,
   useContext,
   useState,
@@ -13,31 +12,11 @@ import {
   useTechnicianDelete,
   useTechnicianUpdate,
 } from "@/hooks/useTechnicians"
-import { useSickTechnicianIdsToday } from "@/hooks/Usesickreports"
-import type { Skill, Technician } from "@/interface/Interface"
+import type { Technician, TechnicianContextType } from "@/interface/Interface"
 import { SKILL_FILTERS } from "../kanban/constants/kanbanConstants"
 import { toast } from "sonner"
-
-interface TechnicianContextType {
-  technicians: Technician[]
-  visibleTechnicians: Technician[]
-  techLoading: boolean
-  skillFilter: (typeof SKILL_FILTERS)[number]
-  setSkillFilter: React.Dispatch<
-    React.SetStateAction<(typeof SKILL_FILTERS)[number]>
-  >
-  sickTechnicianIds: Map<string, string>
-
-  // Mutations
-  createTechnician: (variables: { full_name: string; skill: Skill }) => void
-  updateTechnician: (variables: {
-    id: string
-    full_name: string
-    skill: Skill
-  }) => void
-  deleteTechnician: (id: string) => void
-  blockIfSick: (tech: Technician) => boolean
-}
+import { useTechniciansSickToday } from "@/hooks/Usesickreports"
+import { formatSickTooltip } from "@/lib/sickReportUtils"
 
 const TechnicianContext = createContext<TechnicianContextType | undefined>(
   undefined
@@ -51,8 +30,7 @@ export function TechnicianProvider({ children }: { children: ReactNode }) {
   const { mutate: createTechnician } = useTechnicianCreate()
   const { mutate: updateTechnician } = useTechnicianUpdate()
   const { mutate: deleteTechnician } = useTechnicianDelete()
-  const { data: sickTechnicianIds = new Map<string, string>() } =
-    useSickTechnicianIdsToday()
+  const { data: sickTechnicianIds = new Map() } = useTechniciansSickToday()
 
   const visibleTechnicians = useMemo(
     () =>
@@ -64,9 +42,9 @@ export function TechnicianProvider({ children }: { children: ReactNode }) {
 
   const blockIfSick = useCallback(
     (tech: Technician) => {
-      const reason = sickTechnicianIds.get(tech.id)
-      if (!reason) return false
-      toast.error(`${tech.full_name} bugun kasal: ${reason}`, {
+      const info = sickTechnicianIds.get(tech.id)
+      if (!info) return false
+      toast.error(`${tech.full_name} bugun kasal: ${formatSickTooltip(info)}`, {
         position: "top-center",
       })
       return true

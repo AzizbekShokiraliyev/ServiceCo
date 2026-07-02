@@ -35,6 +35,11 @@ import {
 
 type ViewMode = "list" | "timeline"
 
+const formatShortDate = (dateStr: string) => {
+  const [, m, d] = dateStr.split("-")
+  return `${d}.${m}`
+}
+
 export default function WorkersPage() {
   const navigate = useNavigate()
   const [viewMode, setViewMode] = useState<ViewMode>("list")
@@ -53,11 +58,14 @@ export default function WorkersPage() {
   const { data: sickReports = [] } = useSickReportsByTechnician(
     myTechnician?.id
   )
-  const latestReport = sickReports[0]
-  const isSickToday =
-    latestReport &&
-    new Date(latestReport.created_at).toDateString() ===
-      new Date().toDateString()
+
+  // "bugun" sana oralig'i (start_date <= bugun <= end_date) ichida bo'lgan
+  // faol xabarni topamiz — eng oxirgi yozilgan emas, eng oxirgi FAOL bo'lganini
+  const today = new Date().toISOString().slice(0, 10)
+  const activeSickReport = sickReports.find(
+    (r) => r.start_date <= today && today <= r.end_date
+  )
+  const isSickToday = !!activeSickReport
 
   const workerRow: TimelineRow[] = myTechnician
     ? [
@@ -166,10 +174,10 @@ export default function WorkersPage() {
           </Tabs>
         }
       >
-        {isSickToday && (
-          <Badge className="gap-1 bg-amber-500/10 text-amber-600 hover:bg-amber-500/10">
+        {isSickToday && activeSickReport && (
+          <Badge className="mb-3 gap-1 bg-amber-500/10 text-amber-600 hover:bg-amber-500/10">
             <ThermometerSun className="h-3 w-3" />
-            Kasal
+            Kasal · {formatShortDate(activeSickReport.end_date)}gacha
           </Badge>
         )}
         {remainingJobs.length === 0 ? (
