@@ -7,7 +7,6 @@ export type Skill = "Electrical" | "Plumbing" | "HVAC"
 export type JobType = "electrical" | "plumbing" | "hvac"
 export type SickReportStatus = "pending" | "reviewed"
 
-// Boshqa statuslar qatoriga "rejected" qo'shildi 👇
 export type JobStatus = "pending" | "on_way" | "in_progress" | "completed" | "rejected"
 
 export interface Profile {
